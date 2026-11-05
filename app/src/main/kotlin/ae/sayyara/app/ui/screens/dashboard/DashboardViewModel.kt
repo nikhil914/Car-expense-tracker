@@ -8,6 +8,7 @@ import ae.sayyara.app.ui.settings.UiSettings
 import ae.sayyara.app.ui.settings.UiSettingsStore
 import ae.sayyara.core.consumption.ConsumptionEngine
 import ae.sayyara.core.consumption.Stats
+import ae.sayyara.core.consumption.averageSegments
 import ae.sayyara.core.model.EnergyStoreKind
 import ae.sayyara.core.model.ExpenseCategoryKey
 import ae.sayyara.core.model.FuelGrade
@@ -100,8 +101,9 @@ class DashboardViewModel(
         val events = data.eventsFor(store)
 
         val consumption = runCatching { ConsumptionEngine.compute(events, store) }.getOrNull()
-        val valid = consumption?.segments?.filter { it.valid }.orEmpty()
-        val since = valid.firstOrNull()?.let { seg -> events.firstOrNull { it.id == seg.startEventId }?.timestamp }
+        val valid = consumption?.averageSegments().orEmpty()
+        val byId = events.associateBy { it.id }
+        val since = valid.mapNotNull { byId[it.startEventId]?.timestamp }.minOrNull()
 
         val monthly = runCatching { Stats.monthly(data.events, data.expenses, zone) }.getOrDefault(emptyList())
         val thisMonth = monthly.firstOrNull { it.month == month }

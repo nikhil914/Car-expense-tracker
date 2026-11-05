@@ -12,6 +12,8 @@ import ae.sayyara.app.ui.components.SwitchRow
 import ae.sayyara.app.ui.components.WarningList
 import ae.sayyara.app.ui.format.rememberUiFormatter
 import ae.sayyara.app.ui.navigation.FillDraft
+import ae.sayyara.core.consumption.ValidationWarning
+import ae.sayyara.core.consumption.WarningCodes
 import ae.sayyara.core.model.Id
 import ae.sayyara.core.model.PriceSource
 import androidx.compose.foundation.layout.Arrangement
@@ -288,7 +290,7 @@ private fun ColumnScope.FillForm(state: FillUiState, vm: FillViewModel, onCancel
         }
     }
 
-    WarningList(state.warnings.map { it.message })
+    WarningList(state.warnings.map { warningText(it) })
 
     Button(
         onClick = vm::save,
@@ -333,4 +335,20 @@ private fun LevelSlider(label: String, value: Float, onChange: (Float) -> Unit) 
         }
         Slider(value = value, onValueChange = onChange, valueRange = 0f..1f, steps = 19)
     }
+}
+
+/** Localized text for engine warning codes; the engine's English message is the fallback. */
+@Composable
+private fun warningText(w: ValidationWarning): String = when (w.code) {
+    WarningCodes.ODO_NOT_INCREASING -> stringResource(R.string.warning_odo_not_increasing)
+    WarningCodes.ODO_DATE_MISMATCH -> stringResource(R.string.warning_odo_date_mismatch)
+    WarningCodes.IMPLAUSIBLE_CONSUMPTION -> stringResource(R.string.warning_implausible_consumption)
+    WarningCodes.POSSIBLE_MISSED_FILL -> stringResource(R.string.warning_possible_missed_fill)
+    WarningCodes.GAUGE_RECALIBRATE -> stringResource(R.string.warning_gauge_recalibrate)
+    WarningCodes.AMOUNT_NOT_POSITIVE -> stringResource(R.string.warning_amount_not_positive)
+    WarningCodes.AMOUNT_EXCEEDS_CAPACITY -> stringResource(R.string.warning_amount_exceeds_capacity)
+    WarningCodes.IMPLAUSIBLE_PRICE -> stringResource(R.string.warning_implausible_price)
+    WarningCodes.TOTAL_MISMATCH -> stringResource(R.string.warning_total_mismatch)
+    WarningCodes.LEVEL_OUT_OF_RANGE -> stringResource(R.string.warning_level_out_of_range)
+    else -> w.message
 }

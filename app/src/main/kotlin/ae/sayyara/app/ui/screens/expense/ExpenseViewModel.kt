@@ -134,9 +134,11 @@ class ExpenseViewModel(
             _state.update { it.copy(parkingRate = null) }
             return
         }
-        val rate = runCatching { Parking.hourlyRate(s.emirate, s.zone, Clock.System.now()) }.getOrNull()
+        val now = Clock.System.now()
+        val rate = runCatching { Parking.hourlyRate(s.emirate, s.zone, now) }.getOrNull()
+        val suggested = runCatching { Parking.cost(s.emirate, s.zone, now, s.hours.toDouble()) }.getOrNull()
+            ?: rate?.let { it * s.hours }
         _state.update { cur ->
-            val suggested = rate?.let { it * cur.hours }
             cur.copy(
                 parkingRate = rate,
                 // Prefill the amount only while the user has not typed one.

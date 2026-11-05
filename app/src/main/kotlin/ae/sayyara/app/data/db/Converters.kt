@@ -15,12 +15,11 @@ class Converters {
     fun stringToLocalDate(value: String?): LocalDate? = value?.let { LocalDate.parse(it) }
 
     @TypeConverter
-    fun polylineToString(value: List<LatLon>?): String? =
-        value?.let { json.encodeToString(polylineSerializer, it) }
+    fun polylineToString(value: List<LatLon>): String = json.encodeToString(polylineSerializer, value)
 
     @TypeConverter
-    fun stringToPolyline(value: String?): List<LatLon>? =
-        value?.let { if (it.isBlank()) emptyList() else json.decodeFromString(polylineSerializer, it) }
+    fun stringToPolyline(value: String): List<LatLon> =
+        if (value.isBlank()) emptyList() else json.decodeFromString(polylineSerializer, value)
 
     private companion object {
         val json = Json { ignoreUnknownKeys = true }

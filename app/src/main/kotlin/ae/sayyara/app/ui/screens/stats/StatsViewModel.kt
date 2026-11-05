@@ -7,6 +7,7 @@ import ae.sayyara.app.ui.settings.UiSettingsStore
 import ae.sayyara.core.consumption.ConsumptionEngine
 import ae.sayyara.core.consumption.MonthlyStat
 import ae.sayyara.core.consumption.Stats
+import ae.sayyara.core.consumption.averageSegments
 import ae.sayyara.core.model.EnergyStoreKind
 import ae.sayyara.core.model.FuelGrade
 import ae.sayyara.core.model.YearMonth
@@ -104,7 +105,7 @@ class StatsViewModel(container: AppContainer, settings: UiSettingsStore) : ViewM
 
         val totalKm = monthly.sumOf { it.km }
         val totalAed = monthly.sumOf { it.totalAed }
-        val segs = result?.segments.orEmpty().filter { it.valid }
+        val segs = result?.averageSegments().orEmpty()
             .filter { s -> byId[s.endEventId]?.let { inPeriod(it.timestamp) } == true }
         val segKm = segs.sumOf { it.km }
         val avg = if (segKm > 0) segs.sumOf { it.amount } / segKm * 100.0 else null
