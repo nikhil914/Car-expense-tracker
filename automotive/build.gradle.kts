@@ -14,6 +14,25 @@ android {
         versionName = "0.1.0"
     }
     useLibrary("android.car")
+    signingConfigs {
+        // Release key from CI secrets (base64 keystore decoded to SAYYARA_KEYSTORE_FILE).
+        // Without it, release builds fall back to the debug key: fine for sideloading, not for Play.
+        val ks = System.getenv("SAYYARA_KEYSTORE_FILE")
+        if (ks != null && file(ks).exists()) {
+            create("release") {
+                storeFile = file(ks)
+                storePassword = System.getenv("SAYYARA_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("SAYYARA_KEY_ALIAS")
+                keyPassword = System.getenv("SAYYARA_KEY_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
