@@ -1,5 +1,5 @@
 pluginManagement {
-    repositories { gradlePluginPortal(); mavenCentral(); maven("https://maven.google.com") }
+    repositories { maven("https://maven.google.com"); gradlePluginPortal(); mavenCentral() }
     // Versions declared here are resolved only when a module applies the plugin,
     // so :core builds without the Android Gradle Plugin / SDK.
     plugins {
@@ -24,3 +24,4 @@ if (hasAndroidSdk) {
     include(":app")        // phone app + Android Auto (Car App Library)
     include(":automotive") // Android Automotive OS (built-in head unit)
 }
+rootProject.buildFileName = if (hasAndroidSdk) "build.android.gradle.kts" else "build.gradle.kts"
