@@ -10,9 +10,6 @@
         <include domain="database" path="sayyara.db-shm" />
         <include domain="file" path="datastore/" />
 
-        <exclude domain="root" path="cache/" />
-        <exclude domain="root" path="code_cache/" />
-        <exclude domain="root" path="no_backup/" />
     </cloud-backup>
     <device-transfer>
         <include domain="database" path="sayyara.db" />
@@ -20,8 +17,5 @@
         <include domain="database" path="sayyara.db-shm" />
         <include domain="file" path="datastore/" />
 
-        <exclude domain="root" path="cache/" />
-        <exclude domain="root" path="code_cache/" />
-        <exclude domain="root" path="no_backup/" />
     </device-transfer>
 </data-extraction-rules>
