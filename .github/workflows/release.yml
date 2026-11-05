@@ -18,6 +18,8 @@ jobs:
     timeout-minutes: 45
     env:
       TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      # Job-level so step `if:` can see it (step-level env is not available in `if`).
+      HAS_RELEASE_KEY: ${{ secrets.SAYYARA_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -38,7 +40,7 @@ jobs:
       - name: Decode signing key
         env:
           KEYSTORE_B64: ${{ secrets.SAYYARA_KEYSTORE_BASE64 }}
-        if: env.KEYSTORE_B64 != ''
+        if: env.HAS_RELEASE_KEY == 'true'
         run: |
           echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
           echo "SAYYARA_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
