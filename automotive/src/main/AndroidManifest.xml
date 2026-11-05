@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Android Automotive OS only -->
     <uses-feature android:name="android.hardware.type.automotive" android:required="true" />
@@ -43,6 +44,7 @@
         <activity
             android:name="androidx.car.app.activity.CarAppActivity"
             android:exported="true"
+            tools:ignore="Instantiatable"
             android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
             android:launchMode="singleTask"
             android:label="@string/aaos_app_name">
