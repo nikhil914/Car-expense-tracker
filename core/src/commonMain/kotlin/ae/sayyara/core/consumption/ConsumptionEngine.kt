@@ -176,7 +176,6 @@ object ConsumptionEngine {
                         "${fmt1(per100)} $unitLabel is outside the plausible range (${fmt1(range.start)}-${fmt1(range.endInclusive)}). Check amount, odometer and the full-tank flag.")
                 }
             }
-            if (method == SegmentMethod.FULL_TO_FULL && d > 0 && amount <= 0) valid = false
             return Segment(a.id, b.id, d, amount, per100, method, valid)
         }
 

@@ -1,7 +1,7 @@
 package ae.sayyara.core.consumption
 
 import kotlin.math.abs
-import kotlin.math.round
+import kotlin.math.floor
 
 enum class EconomyUnit { L_PER_100KM, KM_PER_L, MPG_US, MPG_UK, KWH_PER_100KM, KM_PER_KWH }
 
@@ -46,7 +46,7 @@ object Units {
         if (v.isNaN() || v.isInfinite()) return "—"
         var factor = 1L
         repeat(decimals) { factor *= 10 }
-        val r = round(abs(v) * factor).toLong()
+        val r = floor(abs(v) * factor + 0.5).toLong()
         val sign = if (v < 0 && r != 0L) "-" else ""
         val whole = r / factor
         if (decimals == 0) return "$sign$whole"

@@ -92,7 +92,7 @@ object UaeFuelPrices {
     )
 
     /** A decimal price, optionally preceded/followed by a currency token. Decimal point is required. */
-    private val PRICE = Regex("""(\d{1,2}\.\d{1,2})""")
+    private val PRICE = Regex("""(?<![\d.])(\d{1,2}\.\d{1,2})(?!\d)""")
     private val FROM_TO = Regex("""from\s+(?:dhs?|aed)?\s*(\d{1,2}\.\d{1,2}).{0,40}?\bto\s+(?:dhs?|aed)?\s*(\d{1,2}\.\d{1,2})""", RegexOption.IGNORE_CASE)
     private val AR_FROM_TO = Regex("""من\s*(\d{1,2}\.\d{1,2}).{0,40}?إلى\s*(\d{1,2}\.\d{1,2})""")
 

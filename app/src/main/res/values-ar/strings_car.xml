@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- نصوص Android Auto. المالك: المنفذ G. -->
+<resources>
+    <!-- أنواع الوقود -->
+    <string name="car_grade_super_98">سوبر 98</string>
+    <string name="car_grade_special_95">خصوصي 95</string>
+    <string name="car_grade_e_plus_91">إي بلس 91</string>
+    <string name="car_grade_diesel">ديزل</string>
+    <string name="car_grade_electric">كهرباء</string>
+    <string name="car_grade_other">وقود آخر</string>
+
+    <!-- المحطات -->
+    <string name="car_stations_title">محطات وقود قريبة</string>
+    <string name="car_stations_empty">لا توجد محطات في القائمة المحفوظة</string>
+    <string name="car_station_approx">موقع تقريبي</string>
+    <string name="car_station_approx_long">الموقع تقريبي. تحقق من لافتة المحطة قبل الانعطاف.</string>
+    <string name="car_station_distance">على بعد %1$s كم</string>
+
+    <!-- الإجراءات -->
+    <string name="car_action_prices">الأسعار</string>
+    <string name="car_action_log_fill">تسجيل تعبئة</string>
+    <string name="car_action_navigate">انتقال</string>
+    <string name="car_action_save">حفظ</string>
+    <string name="car_action_edit_on_phone">تعديل على الهاتف</string>
+    <string name="car_action_dismiss">تجاهل</string>
+    <string name="car_action_ok">حسنًا</string>
+
+    <!-- الأسعار -->
+    <string name="car_prices_title">أسعار الوقود في الإمارات، %1$s</string>
+    <string name="car_price_per_litre">%1$s درهم للتر</string>
+    <string name="car_price_unknown">السعر غير متوفر</string>
+    <string name="car_price_last_known">آخر سعر معروف (%1$s)</string>
+    <string name="car_price_provisional">سعر مبدئي غير مؤكد بعد</string>
+
+    <!-- اكتشاف التعبئة -->
+    <string name="car_refuel_title">تم اكتشاف تعبئة</string>
+    <string name="car_refuel_summary">تم اكتشاف تعبئة: ~%1$s لتر (%2$s درهم بسعر %3$s لشهر %4$s)</string>
+    <string name="car_refuel_summary_no_price">تم اكتشاف تعبئة: ~%1$s لتر (السعر غير متوفر)</string>
+    <string name="car_refuel_gauge">مؤشر الوقود من %1$s%% إلى %2$s%%</string>
+    <string name="car_refuel_full_tank">يبدو أن الخزان ممتلئ</string>
+    <string name="car_refuel_partial">تعبئة جزئية</string>
+    <string name="car_refuel_odometer">عداد المسافة %1$s كم</string>
+    <string name="car_refuel_odometer_unknown">السيارة لا تشارك عداد المسافة. أكمل على هاتفك.</string>
+    <string name="car_refuel_estimate_note">تقدير من مؤشر الوقود. يمكنك تصحيحه لاحقًا.</string>
+
+    <!-- حالة الاكتشاف التلقائي -->
+    <string name="car_autodetect_title">الاكتشاف التلقائي للتعبئة</string>
+    <string name="car_autodetect_starting">جارٍ التشغيل…</string>
+    <string name="car_autodetect_on">مفعّل</string>
+    <string name="car_autodetect_on_level">مفعّل. مستوى الوقود %1$s%%</string>
+    <string name="car_autodetect_off">غير متاح. اضغط للتفاصيل</string>
+    <string name="car_autodetect_no_fuel_level">الاكتشاف التلقائي غير متاح لهذه السيارة لأنها لا تشارك مستوى الوقود مع Android Auto. يمكنك تسجيل التعبئة من هاتفك.</string>
+    <string name="car_autodetect_no_vehicle">أضف مركبة في تطبيق سيارة على الهاتف لتفعيل الاكتشاف التلقائي.</string>
+    <string name="car_autodetect_no_capacity">حدد سعة خزان مركبتك في تطبيق سيارة على الهاتف لتفعيل الاكتشاف التلقائي.</string>
+    <string name="car_autodetect_electric">اكتشاف الشحن غير متاح على Android Auto حاليًا. سجّل جلسات الشحن من هاتفك.</string>
+    <string name="car_autodetect_no_permission">لا يملك تطبيق سيارة إذن قراءة بيانات الوقود. اسمح بذلك من إعدادات التطبيق على الهاتف.</string>
+    <string name="car_autodetect_not_supported">شاشة السيارة هذه لا تدعم بيانات السيارة. الاكتشاف التلقائي متوقف.</string>
+
+    <!-- رسائل قصيرة -->
+    <string name="car_toast_saved">تم حفظ التعبئة</string>
+    <string name="car_toast_save_failed">تعذر الحفظ. حاول مرة أخرى من الهاتف.</string>
+    <string name="car_toast_sent_to_phone">تم الإرسال إلى هاتفك</string>
+    <string name="car_toast_notifications_off">فعّل إشعارات تطبيق سيارة على هاتفك</string>
+    <string name="car_toast_no_navigation">لا يوجد تطبيق ملاحة</string>
+
+    <!-- إشعارات الهاتف -->
+    <string name="car_notification_channel">تعبئات السيارة</string>
+    <string name="car_notification_channel_desc">تعبئات اكتُشفت أو بدأت في السيارة لإكمالها على الهاتف</string>
+    <string name="car_notification_refuel_title">أكمل تسجيل التعبئة</string>
+    <string name="car_notification_refuel_text">اضغط للمراجعة والحفظ.</string>
+    <string name="car_notification_log_title">سجّل تعبئتك</string>
+    <string name="car_notification_log_text">اضغط لإضافة التعبئة عندما تكون متوقفًا.</string>
+</resources>

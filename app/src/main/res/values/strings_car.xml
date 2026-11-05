@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android Auto (car) strings. Owner: builder G. Keep short: car screens truncate long text. -->
+<resources>
+    <!-- Fuel grades -->
+    <string name="car_grade_super_98">Super 98</string>
+    <string name="car_grade_special_95">Special 95</string>
+    <string name="car_grade_e_plus_91">E-Plus 91</string>
+    <string name="car_grade_diesel">Diesel</string>
+    <string name="car_grade_electric">Electric</string>
+    <string name="car_grade_other">Other fuel</string>
+
+    <!-- Stations (POI) -->
+    <string name="car_stations_title">Fuel stations nearby</string>
+    <string name="car_stations_empty">No stations in the offline list</string>
+    <string name="car_station_approx">approx. location</string>
+    <string name="car_station_approx_long">Location is approximate. Check the station sign before you turn.</string>
+    <string name="car_station_distance">%1$s km away</string>
+
+    <!-- Actions -->
+    <string name="car_action_prices">Prices</string>
+    <string name="car_action_log_fill">Log fill-up</string>
+    <string name="car_action_navigate">Navigate</string>
+    <string name="car_action_save">Save</string>
+    <string name="car_action_edit_on_phone">Edit on phone</string>
+    <string name="car_action_dismiss">Dismiss</string>
+    <string name="car_action_ok">OK</string>
+
+    <!-- Prices -->
+    <string name="car_prices_title">UAE fuel prices, %1$s</string>
+    <string name="car_price_per_litre">AED %1$s per litre</string>
+    <string name="car_price_unknown">Price not available</string>
+    <string name="car_price_last_known">Last known price (%1$s)</string>
+    <string name="car_price_provisional">Provisional, not yet confirmed</string>
+
+    <!-- Refuel detected -->
+    <string name="car_refuel_title">Refuel detected</string>
+    <string name="car_refuel_summary">Refuel detected: ~%1$s L (AED %2$s at %3$s, %4$s price)</string>
+    <string name="car_refuel_summary_no_price">Refuel detected: ~%1$s L (price not available)</string>
+    <string name="car_refuel_gauge">Gauge %1$s%% → %2$s%%</string>
+    <string name="car_refuel_full_tank">Looks like a full tank</string>
+    <string name="car_refuel_partial">Partial fill</string>
+    <string name="car_refuel_odometer">Odometer %1$s km</string>
+    <string name="car_refuel_odometer_unknown">Odometer not shared by the car. Finish on your phone.</string>
+    <string name="car_refuel_estimate_note">Estimated from the fuel gauge. You can correct it later.</string>
+
+    <!-- Auto-detect status -->
+    <string name="car_autodetect_title">Refuel auto-detect</string>
+    <string name="car_autodetect_starting">Starting…</string>
+    <string name="car_autodetect_on">On</string>
+    <string name="car_autodetect_on_level">On. Fuel level %1$s%%</string>
+    <string name="car_autodetect_off">Unavailable. Tap for details</string>
+    <string name="car_autodetect_no_fuel_level">Auto-detect is unavailable for this car. It does not share its fuel level with Android Auto. You can still log fill-ups on your phone.</string>
+    <string name="car_autodetect_no_vehicle">Add a vehicle in the Sayyara phone app to turn on refuel auto-detect.</string>
+    <string name="car_autodetect_no_capacity">Set the tank size of your vehicle in the Sayyara phone app to turn on refuel auto-detect.</string>
+    <string name="car_autodetect_electric">Charge auto-detect is not available on Android Auto yet. Log charging sessions on your phone.</string>
+    <string name="car_autodetect_no_permission">Sayyara does not have permission to read car fuel data. Allow it in the phone app settings.</string>
+    <string name="car_autodetect_not_supported">This car screen does not support car data. Auto-detect is off.</string>
+
+    <!-- Toasts -->
+    <string name="car_toast_saved">Fill-up saved</string>
+    <string name="car_toast_save_failed">Could not save. Try again on your phone.</string>
+    <string name="car_toast_sent_to_phone">Sent to your phone</string>
+    <string name="car_toast_notifications_off">Turn on Sayyara notifications on your phone</string>
+    <string name="car_toast_no_navigation">No navigation app available</string>
+
+    <!-- Phone notifications -->
+    <string name="car_notification_channel">Car fill-ups</string>
+    <string name="car_notification_channel_desc">Fill-ups detected or started in the car, to finish on the phone</string>
+    <string name="car_notification_refuel_title">Finish your fill-up</string>
+    <string name="car_notification_refuel_text">Tap to check and save it.</string>
+    <string name="car_notification_log_title">Log your fill-up</string>
+    <string name="car_notification_log_text">Tap to add the fill-up when you are parked.</string>
+</resources>

@@ -79,13 +79,13 @@ object FuelioImporter {
     }
 
     class Section(val name: String, header: List<String>, val rows: List<List<String>>) {
-        val keys: List<HeaderKey> = header.map { normalizeHeader(it) }
+        val headerKeys: List<HeaderKey> = header.map { normalizeHeader(it) }
         private val index: Map<String, Int> = buildMap {
-            keys.forEachIndexed { i, k -> if (k.key.isNotEmpty() && k.key !in this) put(k.key, i) }
+            headerKeys.forEachIndexed { i, k -> if (k.key.isNotEmpty() && k.key !in this) put(k.key, i) }
         }
 
         fun has(key: String) = key in index
-        fun unitOf(key: String): String? = index[key]?.let { keys[it].unit }
+        fun unitOf(key: String): String? = index[key]?.let { headerKeys[it].unit }
         fun get(row: List<String>, vararg key: String): String? {
             for (k in key) {
                 val i = index[k] ?: continue
