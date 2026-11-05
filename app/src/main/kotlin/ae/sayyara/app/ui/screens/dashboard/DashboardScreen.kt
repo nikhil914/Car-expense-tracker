@@ -2,6 +2,13 @@
 
 package ae.sayyara.app.ui.screens.dashboard
 
+import ae.sayyara.app.ui.common.economyValue
+import ae.sayyara.core.consumption.EconomyUnit
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
 import ae.sayyara.app.R
 import ae.sayyara.app.ui.appViewModel
 import ae.sayyara.app.ui.common.economyText
@@ -159,14 +166,14 @@ private fun HeroCard(state: DashboardState, fmt: UiFormatter, onOpenStats: () ->
         ),
     ) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(Modifier.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.dashboard_last), style = MaterialTheme.typography.labelLarge)
-                    Text(economyText(state.lastPer100km, unit, fmt), style = HeroNumberStyle)
+                    Text(stringResource(R.string.dashboard_last), style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                    EconomyFigure(state.lastPer100km, unit, fmt, HeroNumberStyle)
                 }
                 Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.dashboard_average), style = MaterialTheme.typography.labelLarge)
-                    Text(economyText(state.averagePer100km, unit, fmt), style = MaterialTheme.typography.headlineMedium)
+                    Text(stringResource(R.string.dashboard_average), style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                    EconomyFigure(state.averagePer100km, unit, fmt, MaterialTheme.typography.headlineMedium)
                 }
             }
             // Transparency: always say what the figure is based on.
@@ -208,7 +215,7 @@ private fun MonthSpendCard(state: DashboardState, fmt: UiFormatter) {
         title = month?.let { stringResource(R.string.dashboard_month_spend, fmt.monthLong(it)) }
             ?: stringResource(R.string.dashboard_month_spend_plain),
     ) {
-        Text(fmt.aed(state.monthTotalAed), style = MaterialTheme.typography.headlineMedium)
+        FitText(fmt.aed(state.monthTotalAed), MaterialTheme.typography.headlineMedium)
         if (state.monthBreakdown.isEmpty()) {
             Text(
                 stringResource(R.string.dashboard_month_empty),
@@ -220,7 +227,7 @@ private fun MonthSpendCard(state: DashboardState, fmt: UiFormatter) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(10.dp).background(CategoryPalette[cat.ordinal % CategoryPalette.size], CircleShape))
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(cat.labelRes()), modifier = Modifier.weight(1f))
+                Text(stringResource(cat.labelRes()), modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(fmt.aed(aed), style = MaterialTheme.typography.bodyLarge)
             }
         }
@@ -236,6 +243,9 @@ private fun PriceCard(state: DashboardState, fmt: UiFormatter) {
             Text(
                 stringResource(R.string.price_per_litre_value, fmt.aed(now.aedPerLitre)),
                 style = MaterialTheme.typography.headlineSmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
             )
             Spacer(Modifier.width(8.dp))
             when (now.status) {
@@ -334,7 +344,12 @@ fun ReminderDueRow(item: ReminderDue, fmt: UiFormatter, modifier: Modifier = Mod
         )
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(r.title.ifBlank { stringResource(r.kind.labelRes()) }, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                r.title.ifBlank { stringResource(r.kind.labelRes()) },
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             Text(
                 dueText(item, fmt),
                 style = MaterialTheme.typography.bodySmall,
@@ -360,4 +375,45 @@ fun dueText(item: ReminderDue, fmt: UiFormatter): String {
         km != null -> stringResource(R.string.reminder_due_km, fmt.integer(km))
         else -> stringResource(R.string.reminder_no_due)
     }
+}
+
+/**
+ * Consumption figure on one line: the number shrinks to fit (never wraps) and the unit is set
+ * smaller beside it, so "12.3 km/L" fits half a card even at large font scales.
+ */
+@Composable
+private fun EconomyFigure(per100km: Double?, unit: EconomyUnit, fmt: UiFormatter, style: TextStyle) {
+    if (per100km == null || per100km <= 0.0) {
+        Text(stringResource(R.string.value_missing), style = style, maxLines = 1)
+        return
+    }
+    Row(verticalAlignment = Alignment.Bottom) {
+        FitText(fmt.number(economyValue(per100km, unit), 1), style, Modifier.weight(1f, fill = false))
+        Spacer(Modifier.width(4.dp))
+        Text(
+            stringResource(unit.labelRes()),
+            style = MaterialTheme.typography.labelLarge,
+            maxLines = 1,
+            softWrap = false,
+            modifier = Modifier.padding(bottom = 6.dp),
+        )
+    }
+}
+
+/** Single-line text that steps its font size down (to 60%) instead of wrapping. */
+@Composable
+private fun FitText(text: String, style: TextStyle, modifier: Modifier = Modifier) {
+    val color = LocalContentColor.current
+    BasicText(
+        text = text,
+        modifier = modifier,
+        style = style.merge(TextStyle(color = color)),
+        maxLines = 1,
+        softWrap = false,
+        autoSize = TextAutoSize.StepBased(
+            minFontSize = style.fontSize * 0.6f,
+            maxFontSize = style.fontSize,
+            stepSize = 1.sp,
+        ),
+    )
 }
