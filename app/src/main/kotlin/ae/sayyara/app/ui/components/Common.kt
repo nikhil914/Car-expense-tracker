@@ -231,7 +231,7 @@ fun EmptyState(
 
 /** Small coloured pill, e.g. PROVISIONAL / FORECAST. */
 @Composable
-fun Badge(text: String, modifier: Modifier = Modifier, warning: Boolean = false) {
+fun StatusBadge(text: String, modifier: Modifier = Modifier, warning: Boolean = false) {
     Surface(
         modifier = modifier,
         shape = MaterialTheme.shapes.small,

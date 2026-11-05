@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Auto Backup rules for Android 6-11 (android:fullBackupContent).
+  Backs up the Room database (sayyara.db plus its WAL/SHM files) and DataStore preferences.
+  Caches are never backed up. Android 12+ uses data_extraction_rules.xml instead.
+-->
+<full-backup-content>
+    <include domain="database" path="sayyara.db" />
+    <include domain="database" path="sayyara.db-wal" />
+    <include domain="database" path="sayyara.db-shm" />
+    <include domain="file" path="datastore/" />
+
+    <exclude domain="root" path="cache/" />
+    <exclude domain="root" path="code_cache/" />
+    <exclude domain="root" path="no_backup/" />
+</full-backup-content>

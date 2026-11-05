@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Quick Settings tile -->
+    <string name="tile_label">تسجيل تعبئة</string>
+    <string name="tile_subtitle">سيّارة</string>
+
+    <!-- App shortcuts -->
+    <string name="shortcut_add_fill_short">إضافة تعبئة</string>
+    <string name="shortcut_add_fill_long">تسجيل تعبئة وقود</string>
+    <string name="shortcut_add_expense_short">إضافة مصروف</string>
+    <string name="shortcut_add_expense_long">تسجيل مصروف</string>
+    <string name="shortcut_route_cost_short">تكلفة المشوار</string>
+    <string name="shortcut_route_cost_long">تقدير تكلفة الرحلة</string>
+    <string name="shortcut_disabled">هذا الاختصار لم يعد متاحًا</string>
+
+    <!-- Home-screen widget -->
+    <string name="widget_description">آخر معدل استهلاك، ومصروف هذا الشهر، وسعر الوقود في الإمارات</string>
+    <string name="widget_title">سيّارة</string>
+    <string name="widget_add_fill">إضافة تعبئة</string>
+    <string name="widget_consumption_label_kmpl">كم/لتر آخر تعبئة</string>
+    <string name="widget_consumption_label_kmkwh">كم/كيلوواط ساعة آخر شحن</string>
+    <string name="widget_spend_label">درهم هذا الشهر</string>
+    <string name="widget_price_label">خصوصي 95 درهم/لتر</string>
+    <string name="widget_no_vehicle">أضف مركبة للبدء</string>
+
+    <!-- Notification channels -->
+    <string name="channel_prices_name">أسعار الوقود</string>
+    <string name="channel_prices_description">أسعار الوقود الشهرية الجديدة في الإمارات</string>
+    <string name="channel_reminders_name">التذكيرات</string>
+    <string name="channel_reminders_description">تذكيرات الملكية والتأمين والفحص والصيانة</string>
+    <string name="channel_backup_name">النسخ الاحتياطي</string>
+    <string name="channel_backup_description">حالة النسخ الاحتياطية المشفّرة</string>
+
+    <!-- Fuel price notification -->
+    <string name="notif_price_title">أسعار وقود جديدة في الإمارات</string>
+    <string name="notif_price_new_month">أسعار الوقود في الإمارات لشهر %1$s: سوبر 98 بسعر %2$s درهم</string>
+    <string name="notif_price_all_grades">سوبر 98: %1$s درهم · خصوصي 95: %2$s درهم · إي-بلس 91: %3$s درهم · ديزل: %4$s درهم</string>
+
+    <!-- Reminder notifications -->
+    <string name="notif_reminder_title">%1$s · %2$s</string>
+    <string name="notif_reminder_due_today">مستحق اليوم</string>
+    <string name="notif_reminder_overdue">متأخر</string>
+    <string name="notif_reminder_due_soon">مستحق قريبًا</string>
+    <string name="notif_reminder_due_in_km">مستحق بعد %1$s كم</string>
+    <plurals name="notif_reminder_due_in_days">
+        <item quantity="zero">مستحق اليوم</item>
+        <item quantity="one">مستحق خلال يوم واحد</item>
+        <item quantity="two">مستحق خلال يومين</item>
+        <item quantity="few">مستحق خلال %d أيام</item>
+        <item quantity="many">مستحق خلال %d يومًا</item>
+        <item quantity="other">مستحق خلال %d يوم</item>
+    </plurals>
+    <plurals name="notif_reminder_overdue_days">
+        <item quantity="zero">متأخر</item>
+        <item quantity="one">متأخر يومًا واحدًا</item>
+        <item quantity="two">متأخر يومين</item>
+        <item quantity="few">متأخر %d أيام</item>
+        <item quantity="many">متأخر %d يومًا</item>
+        <item quantity="other">متأخر %d يوم</item>
+    </plurals>
+
+    <!-- Backup notifications -->
+    <string name="notif_backup_done_title">تم حفظ النسخة الاحتياطية</string>
+    <string name="notif_backup_failed_title">فشل النسخ الاحتياطي</string>
+    <string name="notif_backup_folder_lost">اختر مجلد النسخ الاحتياطي مرة أخرى من الإعدادات</string>
+
+    <!-- Import (Fuelio) -->
+    <string name="import_error_no_csv">لم يُعثر على ملف CSV من Fuelio في هذا الملف</string>
+    <string name="import_error_unreadable">تعذّرت قراءة هذا الملف: %1$s</string>
+    <string name="import_error_empty">لا يحتوي الملف على تعبئات أو مصروفات أو تذكيرات لاستيرادها</string>
+    <string name="import_warning_merged_vehicle">ستُضاف البيانات إلى مركبتك الحالية \"%1$s\"</string>
+    <string name="import_warning_duplicates">سيتم تخطي إدخالات موجودة مسبقًا في سيّارة: %1$d تعبئة، %2$d مصروف، %3$d تذكير</string>
+
+    <!-- Parking SMS -->
+    <string name="parking_sms_no_app">لا يوجد تطبيق رسائل لإرسال رسالة المواقف</string>
+</resources>

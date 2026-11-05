@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ backup and device-to-device transfer rules (android:dataExtractionRules).
+  Includes the Room database and DataStore preferences; excludes caches.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="database" path="sayyara.db" />
+        <include domain="database" path="sayyara.db-wal" />
+        <include domain="database" path="sayyara.db-shm" />
+        <include domain="file" path="datastore/" />
+
+        <exclude domain="root" path="cache/" />
+        <exclude domain="root" path="code_cache/" />
+        <exclude domain="root" path="no_backup/" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="database" path="sayyara.db" />
+        <include domain="database" path="sayyara.db-wal" />
+        <include domain="database" path="sayyara.db-shm" />
+        <include domain="file" path="datastore/" />
+
+        <exclude domain="root" path="cache/" />
+        <exclude domain="root" path="code_cache/" />
+        <exclude domain="root" path="no_backup/" />
+    </device-transfer>
+</data-extraction-rules>

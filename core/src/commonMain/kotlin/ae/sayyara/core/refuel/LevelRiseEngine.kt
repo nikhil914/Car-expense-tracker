@@ -166,14 +166,19 @@ internal class LevelRiseEngine(
             ref = m1
             return out
         }
+        if (r.fromMoving) {
+            // A slosh-noisy driving median is only good enough to bracket an event, never a "sustained rise".
+            ref = m1
+            return out
+        }
         val rise = m1.pct - r.pct
-        if (rise <= tuning.noiseBandPercent) {
-            ref = m1 // consumption or noise: keep tracking the stationary baseline
-        } else if (window.size >= 2 * n) {
-            val m0 = snapshot(window.subList(window.size - 2 * n, window.size - n), false)
-            if (abs(m1.pct - m0.pct) <= tuning.settleTolerancePercent) {
-                if (rise >= thresholdPct) emit(evaluate(m1, Triggers.LEVEL_RISE)) else ref = m1 // small settled top-up
-            }
+        val settled = window.size >= 2 * n &&
+            abs(m1.pct - snapshot(window.subList(window.size - 2 * n, window.size - n), false).pct) <= tuning.settleTolerancePercent
+        when {
+            rise <= 0.0 -> ref = m1 // consumption: keep tracking the stationary baseline
+            // Small upward drift is tracked only once it stopped moving, so a slow rise cannot creep the baseline up.
+            rise <= tuning.noiseBandPercent -> if (settled) ref = m1
+            settled -> if (rise >= thresholdPct) emit(evaluate(m1, Triggers.LEVEL_RISE)) else ref = m1 // small settled top-up
         }
         return out
     }
@@ -210,7 +215,7 @@ internal class LevelRiseEngine(
         } else if (window.size >= tuning.stableSamples) {
             val m1 = snapshot(window.takeLast(tuning.stableSamples), false)
             val r = ref
-            if (r != null && m1.pct - r.pct >= thresholdPct) emit(evaluate(m1, Triggers.LEVEL_RISE))
+            if (r != null && !r.fromMoving && m1.pct - r.pct >= thresholdPct) emit(evaluate(m1, Triggers.LEVEL_RISE))
         }
         window.clear()
     }

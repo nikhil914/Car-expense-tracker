@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Static launcher shortcuts (long-press the app icon). Deep links are handled by MainActivity. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="add_fill"
+        android:enabled="true"
+        android:shortcutShortLabel="@string/shortcut_add_fill_short"
+        android:shortcutLongLabel="@string/shortcut_add_fill_long"
+        android:shortcutDisabledMessage="@string/shortcut_disabled">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="sayyara://add-fill"
+            android:targetPackage="ae.sayyara.app"
+            android:targetClass="ae.sayyara.app.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="add_expense"
+        android:enabled="true"
+        android:shortcutShortLabel="@string/shortcut_add_expense_short"
+        android:shortcutLongLabel="@string/shortcut_add_expense_long"
+        android:shortcutDisabledMessage="@string/shortcut_disabled">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="sayyara://expenses/add"
+            android:targetPackage="ae.sayyara.app"
+            android:targetClass="ae.sayyara.app.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="route_cost"
+        android:enabled="true"
+        android:shortcutShortLabel="@string/shortcut_route_cost_short"
+        android:shortcutLongLabel="@string/shortcut_route_cost_long"
+        android:shortcutDisabledMessage="@string/shortcut_disabled">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="sayyara://route"
+            android:targetPackage="ae.sayyara.app"
+            android:targetClass="ae.sayyara.app.MainActivity" />
+    </shortcut>
+</shortcuts>

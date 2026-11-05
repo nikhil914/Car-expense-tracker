@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Platform strings (tile, widget, shortcuts, notifications, import). app_name lives in strings.xml (UI). -->
+<resources>
+    <!-- Quick Settings tile -->
+    <string name="tile_label">Log fill-up</string>
+    <string name="tile_subtitle">Sayyara</string>
+
+    <!-- App shortcuts -->
+    <string name="shortcut_add_fill_short">Add fill</string>
+    <string name="shortcut_add_fill_long">Log a fill-up</string>
+    <string name="shortcut_add_expense_short">Add expense</string>
+    <string name="shortcut_add_expense_long">Log an expense</string>
+    <string name="shortcut_route_cost_short">Route cost</string>
+    <string name="shortcut_route_cost_long">Estimate a trip\'s cost</string>
+    <string name="shortcut_disabled">This shortcut is no longer available</string>
+
+    <!-- Home-screen widget -->
+    <string name="widget_description">Latest consumption, this month\'s spend and the UAE fuel price</string>
+    <string name="widget_title">Sayyara</string>
+    <string name="widget_add_fill">Add fill</string>
+    <string name="widget_consumption_label_kmpl">km/L last</string>
+    <string name="widget_consumption_label_kmkwh">km/kWh last</string>
+    <string name="widget_spend_label">AED this month</string>
+    <string name="widget_price_label">Special 95 AED/L</string>
+    <string name="widget_no_vehicle">Add a vehicle to start</string>
+
+    <!-- Notification channels -->
+    <string name="channel_prices_name">Fuel prices</string>
+    <string name="channel_prices_description">New monthly UAE fuel prices</string>
+    <string name="channel_reminders_name">Reminders</string>
+    <string name="channel_reminders_description">Mulkiya, insurance, inspection and service reminders</string>
+    <string name="channel_backup_name">Backups</string>
+    <string name="channel_backup_description">Status of encrypted backups</string>
+
+    <!-- Fuel price notification -->
+    <string name="notif_price_title">New UAE fuel prices</string>
+    <!-- %1$s = month name (e.g. December), %2$s = price, e.g. 4.16 -->
+    <string name="notif_price_new_month">UAE fuel prices for %1$s: Super 98 AED %2$s</string>
+    <string name="notif_price_all_grades">Super 98 AED %1$s · Special 95 AED %2$s · E-Plus 91 AED %3$s · Diesel AED %4$s</string>
+
+    <!-- Reminder notifications. %1$s = reminder title, %2$s = vehicle name -->
+    <string name="notif_reminder_title">%1$s · %2$s</string>
+    <string name="notif_reminder_due_today">Due today</string>
+    <string name="notif_reminder_overdue">Overdue</string>
+    <string name="notif_reminder_due_soon">Due soon</string>
+    <!-- %1$s = formatted kilometres -->
+    <string name="notif_reminder_due_in_km">Due in %1$s km</string>
+    <plurals name="notif_reminder_due_in_days">
+        <item quantity="one">Due in %d day</item>
+        <item quantity="other">Due in %d days</item>
+    </plurals>
+    <plurals name="notif_reminder_overdue_days">
+        <item quantity="one">Overdue by %d day</item>
+        <item quantity="other">Overdue by %d days</item>
+    </plurals>
+
+    <!-- Backup notifications -->
+    <string name="notif_backup_done_title">Backup saved</string>
+    <string name="notif_backup_failed_title">Backup failed</string>
+    <string name="notif_backup_folder_lost">Pick the backup folder again in Settings</string>
+
+    <!-- Import (Fuelio) -->
+    <string name="import_error_no_csv">No Fuelio CSV found in this file</string>
+    <!-- %1$s = technical reason -->
+    <string name="import_error_unreadable">Could not read this file: %1$s</string>
+    <string name="import_error_empty">The file has no fill-ups, expenses or reminders to import</string>
+    <!-- %1$s = existing vehicle name -->
+    <string name="import_warning_merged_vehicle">Will be added to your existing vehicle \"%1$s\"</string>
+    <string name="import_warning_duplicates">Skipping entries already in Sayyara: %1$d fill-ups, %2$d expenses, %3$d reminders</string>
+
+    <!-- Parking SMS -->
+    <string name="parking_sms_no_app">No SMS app found to send the parking message</string>
+</resources>
