@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Android Automotive OS only -->
+    <uses-feature android:name="android.hardware.type.automotive" android:required="true" />
+    <uses-feature android:name="android.software.car.templates_host" android:required="true" />
+    <!-- Not needed on head units; declared not-required per Google's AAOS quality guidelines -->
+    <uses-feature android:name="android.hardware.wifi" android:required="false" />
+    <uses-feature android:name="android.hardware.screen.portrait" android:required="false" />
+    <uses-feature android:name="android.hardware.screen.landscape" android:required="false" />
+
+    <!-- Vehicle properties (see AaosPermissions) -->
+    <uses-permission android:name="android.car.permission.CAR_ENERGY" />       <!-- dangerous: FUEL_LEVEL, EV_BATTERY_LEVEL, RANGE -->
+    <uses-permission android:name="android.car.permission.CAR_ENERGY_PORTS" /> <!-- normal: FUEL_DOOR_OPEN, EV_CHARGE_PORT_* -->
+    <uses-permission android:name="android.car.permission.CAR_INFO" />         <!-- normal: INFO_FUEL_CAPACITY -->
+    <uses-permission android:name="android.car.permission.CAR_POWERTRAIN" />   <!-- normal: IGNITION_STATE, PARKING_BRAKE_ON -->
+    <uses-permission android:name="android.car.permission.CAR_SPEED" />        <!-- dangerous: PERF_VEHICLE_SPEED -->
+    <uses-permission android:name="android.car.permission.CAR_MILEAGE_3P" />   <!-- dangerous, newer AAOS: PERF_ODOMETER -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="androidx.car.app.MAP_TEMPLATES" />
+
+    <application
+        android:allowBackup="true"
+        android:supportsRtl="true"
+        android:label="@string/aaos_app_name"
+        android:icon="@android:drawable/sym_def_app_icon"
+        android:appCategory="maps">
+
+        <meta-data android:name="com.android.automotive" android:resource="@xml/automotive_app_desc" />
+        <meta-data android:name="androidx.car.app.minCarApiLevel" android:value="3" />
+
+        <service
+            android:name=".SayyaraAutomotiveCarAppService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="androidx.car.app.CarAppService" />
+                <category android:name="androidx.car.app.category.POI" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name="androidx.car.app.activity.CarAppActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
+            android:launchMode="singleTask"
+            android:label="@string/aaos_app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="distractionOptimized" android:value="true" />
+        </activity>
+
+        <service
+            android:name=".RefuelSnapshotJobService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <receiver
+            android:name=".SnapshotBootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
