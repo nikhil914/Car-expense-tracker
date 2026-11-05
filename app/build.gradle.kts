@@ -27,7 +27,11 @@ android {
 
 kotlin {
     jvmToolchain(21)
-    compilerOptions { optIn.add("kotlin.time.ExperimentalTime") }
+    compilerOptions {
+        optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("androidx.compose.material3.ExperimentalMaterial3Api")
+        optIn.add("androidx.compose.foundation.layout.ExperimentalLayoutApi")
+    }
 }
 
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }
