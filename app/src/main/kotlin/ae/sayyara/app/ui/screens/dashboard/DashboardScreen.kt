@@ -169,13 +169,19 @@ private fun HeroCard(state: DashboardState, fmt: UiFormatter, onOpenStats: () ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.dashboard_last), style = MaterialTheme.typography.labelLarge, maxLines = 1)
-                    EconomyFigure(state.lastPer100km, unit, fmt, HeroNumberStyle)
+                    EconomyNumber(state.lastPer100km, unit, fmt)
                 }
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.dashboard_average), style = MaterialTheme.typography.labelLarge, maxLines = 1)
-                    EconomyFigure(state.averagePer100km, unit, fmt, MaterialTheme.typography.headlineMedium)
+                    EconomyNumber(state.averagePer100km, unit, fmt)
                 }
             }
+            // One unit label for both figures, under the numbers.
+            Text(
+                stringResource(unit.labelRes()),
+                style = MaterialTheme.typography.titleSmall,
+                maxLines = 1,
+            )
             // Transparency: always say what the figure is based on.
             val explanation = when {
                 state.basedOnFills > 0 && state.basedSince != null -> stringResource(
@@ -378,26 +384,14 @@ fun dueText(item: ReminderDue, fmt: UiFormatter): String {
 }
 
 /**
- * Consumption figure on one line: the number shrinks to fit (never wraps) and the unit is set
- * smaller beside it, so "12.3 km/L" fits half a card even at large font scales.
+ * Consumption number only (the unit is shown once under both figures). Same hero size for
+ * last and average; shrinks to fit instead of wrapping.
  */
 @Composable
-private fun EconomyFigure(per100km: Double?, unit: EconomyUnit, fmt: UiFormatter, style: TextStyle) {
-    if (per100km == null || per100km <= 0.0) {
-        Text(stringResource(R.string.value_missing), style = style, maxLines = 1)
-        return
-    }
-    Row(verticalAlignment = Alignment.Bottom) {
-        FitText(fmt.number(economyValue(per100km, unit), 1), style, Modifier.weight(1f, fill = false))
-        Spacer(Modifier.width(4.dp))
-        Text(
-            stringResource(unit.labelRes()),
-            style = MaterialTheme.typography.labelLarge,
-            maxLines = 1,
-            softWrap = false,
-            modifier = Modifier.padding(bottom = 6.dp),
-        )
-    }
+private fun EconomyNumber(per100km: Double?, unit: EconomyUnit, fmt: UiFormatter) {
+    val text = if (per100km == null || per100km <= 0.0) stringResource(R.string.value_missing)
+    else fmt.number(economyValue(per100km, unit), 1)
+    FitText(text, HeroNumberStyle)
 }
 
 /** Single-line text that steps its font size down (to 60%) instead of wrapping. */
