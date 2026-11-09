@@ -1,4 +1,4 @@
-package ae.sayyara.app.ui.screens.dashboard
+package ae.sayyara.app.ui.screens.home
 
 import ae.sayyara.app.data.AppContainer
 import ae.sayyara.app.ui.common.VehicleData
@@ -37,7 +37,7 @@ import kotlinx.datetime.todayIn
 
 data class ReminderDue(val reminder: Reminder, val due: ReminderPlanner.Due)
 
-data class DashboardState(
+data class HomeUiState(
     val loading: Boolean = true,
     val vehicles: List<Vehicle> = emptyList(),
     val vehicle: Vehicle? = null,
@@ -62,19 +62,19 @@ data class DashboardState(
     val hasMulkiyaReminder: Boolean = false,
 )
 
-class DashboardViewModel(
+class HomeViewModel(
     private val container: AppContainer,
     settings: UiSettingsStore,
 ) : ViewModel() {
 
-    val state: StateFlow<DashboardState> = combine(
+    val state: StateFlow<HomeUiState> = combine(
         container.activeVehicles(),
         container.selectedVehicleData(),
         container.fuelPrices.observeAll(),
         settings.state,
     ) { vehicles, data, prices, ui -> build(vehicles, data, prices, ui) }
         .flowOn(Dispatchers.Default)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DashboardState())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
     init {
         // Pull the latest official monthly prices in the background; failures are silent.
@@ -90,9 +90,9 @@ class DashboardViewModel(
         data: VehicleData?,
         prices: List<FuelPrice>,
         ui: UiSettings,
-    ): DashboardState {
+    ): HomeUiState {
         if (data == null) {
-            return DashboardState(loading = false, vehicles = vehicles, settings = ui)
+            return HomeUiState(loading = false, vehicles = vehicles, settings = ui)
         }
         val zone = TimeZone.currentSystemDefault()
         val today = Clock.System.todayIn(zone)
@@ -132,7 +132,7 @@ class DashboardViewModel(
             runCatching { ReminderDue(r, ReminderPlanner.due(r, today, odo, kmPerDay)) }.getOrNull()
         }.sortedWith(compareBy<ReminderDue>({ !it.due.overdue }, { it.due.daysLeft ?: Int.MAX_VALUE }))
 
-        return DashboardState(
+        return HomeUiState(
             loading = false,
             vehicles = vehicles,
             vehicle = data.vehicle,

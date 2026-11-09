@@ -1,7 +1,7 @@
 package ae.sayyara.app.ui.navigation
 
 import ae.sayyara.app.R
-import ae.sayyara.app.ui.screens.dashboard.DashboardScreen
+import ae.sayyara.app.ui.screens.home.HomeScreen
 import ae.sayyara.app.ui.screens.expense.ExpenseScreen
 import ae.sayyara.app.ui.screens.fill.FillSheet
 import ae.sayyara.app.ui.screens.fill.FillSheetRequest
@@ -104,7 +104,7 @@ fun AppNavHost(onboardingDone: Boolean, pendingLink: DeepLinkAction?, onLinkHand
                 )
             }
             composable<DashboardRoute> {
-                DashboardScreen(
+                HomeScreen(
                     onAddFill = { fill = FillSheetRequest() },
                     onAddVehicle = { nav.navigate(VehicleEditRoute()) },
                     onOpenReminders = { nav.navigate(RemindersRoute) },

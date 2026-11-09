@@ -1,5 +1,9 @@
-package ae.sayyara.app.ui.screens.dashboard
+package ae.sayyara.app.ui.screens.home
 
+import ae.sayyara.app.ui.components.CategoryIconPill
+import ae.sayyara.app.ui.components.FuelGradeBadge
+import ae.sayyara.app.ui.components.TabularMetricText
+import ae.sayyara.app.ui.theme.MetricSize
 import ae.sayyara.app.R
 import ae.sayyara.app.ui.appViewModel
 import ae.sayyara.app.ui.common.economyValue
@@ -14,10 +18,8 @@ import ae.sayyara.app.ui.components.TintedIcon
 import ae.sayyara.app.ui.format.UiFormatter
 import ae.sayyara.app.ui.format.rememberUiFormatter
 import ae.sayyara.app.ui.settings.UiSettings
-import ae.sayyara.app.ui.theme.AlertRed
 import ae.sayyara.app.ui.theme.HeroNumberStyle
 import ae.sayyara.app.ui.theme.SayyaraTheme
-import ae.sayyara.app.ui.theme.TrendDownGreen
 import ae.sayyara.app.ui.theme.badgeColor
 import ae.sayyara.app.ui.theme.color
 import ae.sayyara.app.ui.settings.ThemeMode
@@ -103,22 +105,22 @@ import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 
 @Composable
-fun DashboardScreen(
+fun HomeScreen(
     onAddFill: () -> Unit,
     onAddVehicle: () -> Unit,
     onOpenReminders: () -> Unit,
     onMulkiyaWizard: () -> Unit,
     onOpenStats: () -> Unit,
 ) {
-    val vm = appViewModel { DashboardViewModel(it.container, it.settings) }
+    val vm = appViewModel { HomeViewModel(it.container, it.settings) }
     val state by vm.state.collectAsStateWithLifecycle()
-    DashboardContent(state, vm::selectVehicle, onAddFill, onAddVehicle, onOpenReminders, onMulkiyaWizard, onOpenStats)
+    HomeContent(state, vm::selectVehicle, onAddFill, onAddVehicle, onOpenReminders, onMulkiyaWizard, onOpenStats)
 }
 
 /** Stateless dashboard; previewable. */
 @Composable
-fun DashboardContent(
-    state: DashboardState,
+fun HomeContent(
+    state: HomeUiState,
     onSelectVehicle: (String) -> Unit,
     onAddFill: () -> Unit,
     onAddVehicle: () -> Unit,
@@ -186,7 +188,7 @@ private fun Emirate.code(): String = when (this) {
 }
 
 @Composable
-private fun VehiclePill(state: DashboardState, onSelect: (String) -> Unit) {
+private fun VehiclePill(state: HomeUiState, onSelect: (String) -> Unit) {
     var open by remember { mutableStateOf(false) }
     val v = state.vehicle
     val multi = state.vehicles.size > 1
@@ -235,7 +237,7 @@ private fun VehiclePill(state: DashboardState, onSelect: (String) -> Unit) {
 // ---------------------------------------------------------------- card 1: economy hero
 
 @Composable
-private fun EconomyHeroCard(state: DashboardState, fmt: UiFormatter, onOpenStats: () -> Unit) {
+private fun EconomyHeroCard(state: HomeUiState, fmt: UiFormatter, onOpenStats: () -> Unit) {
     val unit = state.settings.economyUnit.forStore(state.storeKind)
     SayyaraCard(onClick = onOpenStats) {
         Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), verticalAlignment = Alignment.CenterVertically) {
@@ -317,33 +319,20 @@ private fun HeroFigure(
         Overline(label)
         val text = if (per100km == null || per100km <= 0.0) stringResource(R.string.value_missing)
         else fmt.number(economyValue(per100km, unit), 1)
-        FitText(text, HeroNumberStyle)
+        TabularMetricText(text, size = MetricSize.Hero, horizontalAlignment = if (alignEnd) Alignment.End else Alignment.Start)
     }
-}
-
-/** Single-line text that steps its font size down (to 60%) instead of wrapping. */
-@Composable
-fun FitText(text: String, style: TextStyle, modifier: Modifier = Modifier, color: Color = LocalContentColor.current) {
-    BasicText(
-        text = text,
-        modifier = modifier,
-        style = style.merge(TextStyle(color = color)),
-        maxLines = 1,
-        softWrap = false,
-        autoSize = TextAutoSize.StepBased(minFontSize = style.fontSize * 0.6f, maxFontSize = style.fontSize, stepSize = 1.sp),
-    )
 }
 
 // ---------------------------------------------------------------- card 2: month spend
 
 @Composable
-private fun MonthSpendCard(state: DashboardState, fmt: UiFormatter) {
+private fun MonthSpendCard(state: HomeUiState, fmt: UiFormatter) {
     SayyaraCard {
         Overline(
             state.month?.let { stringResource(R.string.dashboard_month_spend, fmt.monthLong(it)) }
                 ?: stringResource(R.string.dashboard_month_spend_plain),
         )
-        FitText(fmt.aed(state.monthTotalAed), MaterialTheme.typography.displaySmall)
+        TabularMetricText(fmt.aed(state.monthTotalAed), size = MetricSize.Large)
         val positive = state.monthBreakdown.filter { it.second > 0 }
         if (positive.isEmpty()) {
             Text(
@@ -362,15 +351,9 @@ private fun MonthSpendCard(state: DashboardState, fmt: UiFormatter) {
                 Box(Modifier.weight(aed.toFloat()).fillMaxHeight().background(cat.color()))
             }
         }
-        positive.forEach { (cat, aed) ->
-            Row(
-                Modifier.fillMaxWidth().heightIn(min = 40.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                CategoryIcon(cat)
-                Text(stringResource(cat.labelRes()), style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                Text(fmt.aed(aed), style = MaterialTheme.typography.titleSmall, maxLines = 1)
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            positive.forEach { (cat, aed) ->
+                CategoryIconPill(cat, Modifier.fillMaxWidth(), amount = fmt.aed(aed))
             }
         }
     }
@@ -379,7 +362,7 @@ private fun MonthSpendCard(state: DashboardState, fmt: UiFormatter) {
 // ---------------------------------------------------------------- card 3: price ticker
 
 @Composable
-private fun PriceTickerCard(state: DashboardState, fmt: UiFormatter) {
+private fun PriceTickerCard(state: HomeUiState, fmt: UiFormatter) {
     val grade = state.priceGrade ?: return
     val now = state.priceNow ?: return
     SayyaraCard {
@@ -393,10 +376,13 @@ private fun PriceTickerCard(state: DashboardState, fmt: UiFormatter) {
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Box(Modifier.size(12.dp).background(grade.badgeColor(), CircleShape))
-            Column(Modifier.weight(1f)) {
-                Text(stringResource(grade.labelRes()), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
-                FitText(stringResource(R.string.price_per_litre_value, fmt.aed(now.aedPerLitre)), MaterialTheme.typography.headlineMedium)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                FuelGradeBadge(grade)
+                TabularMetricText(
+                    fmt.aed(now.aedPerLitre),
+                    unit = "/ " + stringResource(R.string.unit_litre),
+                    size = MetricSize.Large,
+                )
             }
             state.pricePrevious?.let { prev -> TrendPill(now.aedPerLitre - prev.aedPerLitre, fmt.monthShort(prev.month), fmt) }
         }
@@ -410,8 +396,8 @@ private fun PriceTickerCard(state: DashboardState, fmt: UiFormatter) {
 private fun TrendPill(delta: Double, prevMonth: String, fmt: UiFormatter) {
     val fils = fmt.integer(abs(delta) * 100)
     val (icon, color, text) = when {
-        delta > 0.0005 -> Triple(Icons.AutoMirrored.Filled.TrendingUp, AlertRed, stringResource(R.string.dashboard_price_delta_up, fils, prevMonth))
-        delta < -0.0005 -> Triple(Icons.AutoMirrored.Filled.TrendingDown, TrendDownGreen, stringResource(R.string.dashboard_price_delta_down, fils, prevMonth))
+        delta > 0.0005 -> Triple(Icons.AutoMirrored.Filled.TrendingUp, SayyaraTheme.colors.alert, stringResource(R.string.dashboard_price_delta_up, fils, prevMonth))
+        delta < -0.0005 -> Triple(Icons.AutoMirrored.Filled.TrendingDown, SayyaraTheme.colors.success, stringResource(R.string.dashboard_price_delta_down, fils, prevMonth))
         else -> Triple(Icons.AutoMirrored.Filled.TrendingFlat, MaterialTheme.colorScheme.onSurfaceVariant, stringResource(R.string.dashboard_price_same, prevMonth))
     }
     Surface(shape = CircleShape, color = color.copy(alpha = 0.14f), contentColor = color) {
@@ -425,7 +411,7 @@ private fun TrendPill(delta: Double, prevMonth: String, fmt: UiFormatter) {
 // ---------------------------------------------------------------- card 4: reminders
 
 @Composable
-private fun RemindersCard(state: DashboardState, fmt: UiFormatter, onOpenReminders: () -> Unit, onMulkiyaWizard: () -> Unit) {
+private fun RemindersCard(state: HomeUiState, fmt: UiFormatter, onOpenReminders: () -> Unit, onMulkiyaWizard: () -> Unit) {
     SayyaraCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Overline(stringResource(R.string.dashboard_upcoming), Modifier.weight(1f))
@@ -461,11 +447,11 @@ private fun RemindersCard(state: DashboardState, fmt: UiFormatter, onOpenReminde
 fun ReminderDueRow(item: ReminderDue, fmt: UiFormatter, modifier: Modifier = Modifier) {
     val r = item.reminder
     val due = item.due
-    val tint = if (due.overdue) AlertRed else MaterialTheme.colorScheme.primary
+    val tint = if (due.overdue) SayyaraTheme.colors.alert else MaterialTheme.colorScheme.primary
     Row(
         modifier.fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(if (due.overdue) AlertRed.copy(alpha = 0.10f) else MaterialTheme.colorScheme.surfaceContainerHigh)
+            .background(if (due.overdue) SayyaraTheme.colors.alertContainer else MaterialTheme.colorScheme.surfaceContainerHigh)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -478,7 +464,7 @@ fun ReminderDueRow(item: ReminderDue, fmt: UiFormatter, modifier: Modifier = Mod
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(dueText(item, fmt), style = MaterialTheme.typography.bodySmall, color = if (due.overdue) AlertRed else MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(dueText(item, fmt), style = MaterialTheme.typography.bodySmall, color = if (due.overdue) SayyaraTheme.colors.alert else MaterialTheme.colorScheme.onSurfaceVariant)
             if (!due.overdue) {
                 val window = r.leadDays.coerceAtLeast(14) * 2
                 due.daysLeft?.let { d ->
@@ -514,56 +500,21 @@ fun dueText(item: ReminderDue, fmt: UiFormatter): String {
 
 // ---------------------------------------------------------------- previews
 
-private fun previewState(): DashboardState {
-    val now = Instant.parse("2026-11-09T08:00:00Z")
-    val car = Vehicle(id = "v1", name = "Nissan Altima", make = "Nissan", model = "Altima", year = 2021, plate = "5", emirate = Emirate.ABU_DHABI, updatedAt = now)
-    val mulkiya = Reminder("r1", "v1", ReminderKind.MULKIYA, "Mulkiya renewal", dueDate = LocalDate(2026, 12, 1))
-    val oil = Reminder("r2", "v1", ReminderKind.OIL, "Oil change", dueOdometerKm = 46000.0)
-    return DashboardState(
-        loading = false,
-        vehicles = listOf(car, car.copy(id = "v2", name = "Toyota Land Cruiser")),
-        vehicle = car,
-        settings = UiSettings(economyUnit = EconomyUnit.KM_PER_L),
-        storeKind = EnergyStoreKind.TANK,
-        lastPer100km = 100 / 11.4,
-        averagePer100km = 100 / 10.8,
-        basedOnFills = 3,
-        basedSince = Instant.parse("2026-11-02T06:00:00Z"),
-        pendingPartials = 2,
-        totalCostPerKmAed = 0.42,
-        fillCount = 6,
-        month = YearMonth(2026, 11),
-        monthTotalAed = 1240.0,
-        monthBreakdown = listOf(
-            ExpenseCategoryKey.FUEL to 820.0, ExpenseCategoryKey.SALIK to 126.0,
-            ExpenseCategoryKey.DARB to 48.0, ExpenseCategoryKey.PARKING to 96.0, ExpenseCategoryKey.SERVICE to 150.0,
-        ),
-        priceGrade = FuelGrade.SPECIAL_95,
-        priceNow = PriceQuote(YearMonth(2026, 11), FuelGrade.SPECIAL_95, 4.04, QuoteStatus.FINAL),
-        pricePrevious = PriceQuote(YearMonth(2026, 10), FuelGrade.SPECIAL_95, 4.28, QuoteStatus.FINAL),
-        reminders = listOf(
-            ReminderDue(mulkiya, ReminderPlanner.Due("r1", LocalDate(2026, 12, 1), 22, null, false)),
-            ReminderDue(oil, ReminderPlanner.Due("r2", null, null, -120.0, true)),
-        ),
-        hasMulkiyaReminder = false,
-    )
-}
-
 @Composable
-private fun DashboardPreview(dark: Boolean) {
+private fun HomePreview(dark: Boolean) {
     SayyaraTheme(themeMode = if (dark) ThemeMode.DARK else ThemeMode.LIGHT) {
-        DashboardContent(previewState(), {}, {}, {}, {}, {}, {})
+        HomeContent(HomePreviewData.state(), {}, {}, {}, {}, {}, {})
     }
 }
 
 @Preview(name = "Light - EN", showBackground = true, heightDp = 1500)
 @Composable
-private fun DashboardLightPreview() = DashboardPreview(false)
+private fun HomeLightPreview() = HomePreview(false)
 
 @Preview(name = "Dark - EN", showBackground = true, heightDp = 1500)
 @Composable
-private fun DashboardDarkPreview() = DashboardPreview(true)
+private fun HomeDarkPreview() = HomePreview(true)
 
 @Preview(name = "Light - AR (RTL)", locale = "ar", showBackground = true, heightDp = 1500)
 @Composable
-private fun DashboardArabicPreview() = DashboardPreview(false)
+private fun HomeArabicPreview() = HomePreview(false)

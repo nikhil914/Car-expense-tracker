@@ -16,8 +16,8 @@ import ae.sayyara.app.ui.format.parseDecimal
 import ae.sayyara.app.ui.format.parseInt
 import ae.sayyara.app.ui.format.rememberUiFormatter
 import ae.sayyara.app.ui.format.toInputText
-import ae.sayyara.app.ui.screens.dashboard.ReminderDue
-import ae.sayyara.app.ui.screens.dashboard.ReminderDueRow
+import ae.sayyara.app.ui.screens.home.ReminderDue
+import ae.sayyara.app.ui.screens.home.ReminderDueRow
 import ae.sayyara.core.model.Reminder
 import ae.sayyara.core.model.ReminderKind
 import ae.sayyara.core.reminders.ReminderPlanner
