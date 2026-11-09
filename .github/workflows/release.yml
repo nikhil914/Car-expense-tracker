@@ -18,8 +18,6 @@ jobs:
     timeout-minutes: 45
     env:
       TAG: ${{ github.event.inputs.tag || github.ref_name }}
-      # Job-level so step `if:` can see it (step-level env is not available in `if`).
-      HAS_RELEASE_KEY: ${{ secrets.SAYYARA_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -35,14 +33,28 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # Optional real signing key: add repo secrets SAYYARA_KEYSTORE_BASE64, SAYYARA_KEYSTORE_PASSWORD,
-      # SAYYARA_KEY_ALIAS, SAYYARA_KEY_PASSWORD. Without them the APKs are signed with the debug key.
+      # Releases are always signed with the single release key from repo secrets:
+      # SAYYARA_KEYSTORE_BASE64, SAYYARA_KEYSTORE_PASSWORD, SAYYARA_KEY_ALIAS, SAYYARA_KEY_PASSWORD.
+      # No debug-key fallback, so every release can update the previous one.
+      - name: Check signing secrets
+        env:
+          S1: ${{ secrets.SAYYARA_KEYSTORE_BASE64 }}
+          S2: ${{ secrets.SAYYARA_KEYSTORE_PASSWORD }}
+          S3: ${{ secrets.SAYYARA_KEY_ALIAS }}
+          S4: ${{ secrets.SAYYARA_KEY_PASSWORD }}
+        run: |
+          missing=0
+          for pair in "SAYYARA_KEYSTORE_BASE64:$S1" "SAYYARA_KEYSTORE_PASSWORD:$S2" "SAYYARA_KEY_ALIAS:$S3" "SAYYARA_KEY_PASSWORD:$S4"; do
+            name="${pair%%:*}"; val="${pair#*:}"
+            if [ -n "$val" ]; then echo "$name: present"; else echo "::error::$name is missing or empty"; missing=1; fi
+          done
+          exit $missing
+
       - name: Decode signing key
         env:
           KEYSTORE_B64: ${{ secrets.SAYYARA_KEYSTORE_BASE64 }}
-        if: env.HAS_RELEASE_KEY == 'true'
         run: |
-          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "$KEYSTORE_B64" | tr -d '[:space:]' | base64 -d > "$RUNNER_TEMP/release.jks"
           echo "SAYYARA_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
       - name: Build release APKs
@@ -65,7 +77,9 @@ jobs:
             echo "== $f"
             "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$f" | grep -E "Signer #1 certificate (DN|SHA-256)"
           done
-          if [ -z "$SAYYARA_KEYSTORE_FILE" ]; then echo "::warning::No release keystore secrets: APKs are debug-signed"; fi
+          if "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs dist/*.apk | grep -q "CN=Android Debug"; then
+            echo "::error::APK is debug-signed"; exit 1
+          fi
 
       - name: Publish GitHub release
         env:
