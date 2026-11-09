@@ -6,6 +6,7 @@ import ae.sayyara.app.ui.ReceiptScanAction
 import ae.sayyara.app.ui.components.TintedIcon
 import ae.sayyara.app.ui.theme.NestedShape
 import ae.sayyara.app.ui.theme.PillShape
+import ae.sayyara.core.model.FuelGrade
 import ae.sayyara.core.ocr.ReceiptFields
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Surface
