@@ -77,9 +77,11 @@ jobs:
             echo "== $f"
             "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$f" | grep -E "Signer #1 certificate (DN|SHA-256)"
           done
-          if "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs dist/*.apk | grep -q "CN=Android Debug"; then
-            echo "::error::APK is debug-signed"; exit 1
-          fi
+          for f in dist/*.apk; do
+            if "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$f" | grep -q "CN=Android Debug"; then
+              echo "::error::$f is debug-signed"; exit 1
+            fi
+          done
 
       - name: Publish GitHub release
         env:
