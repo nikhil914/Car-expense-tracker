@@ -289,4 +289,11 @@
     <string name="dashboard_price_official">Official UAE price</string>
     <string name="dashboard_price_delta_up">▲ %1$s fils vs %2$s</string>
     <string name="dashboard_price_delta_down">▼ %1$s fils vs %2$s</string>
+    <string name="fill_quick_aed">AED %1$s</string>
+    <string name="fill_at_price">@ %1$s / %2$s</string>
+    <string name="fill_odometer_last_delta">Last: %1$s km (+%2$s km)</string>
+    <string name="fill_odo_step">+%1$s km</string>
+    <string name="fill_more_details">More details</string>
+    <string name="fill_save">Save fill-up</string>
+    <string name="fill_save_with_total">Save fill-up · %1$s</string>
 </resources>

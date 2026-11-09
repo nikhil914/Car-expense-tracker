@@ -48,7 +48,7 @@ data class FillUiState(
     val odometerText: String = "",
     val odometerEstimated: Boolean = false,
     val lastOdometerKm: Double? = null,
-    val amountMode: AmountMode = AmountMode.LITRES,
+    val amountMode: AmountMode = AmountMode.AED,
     val litresText: String = "",
     val totalText: String = "",
     val unitPriceText: String = "",

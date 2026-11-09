@@ -288,4 +288,11 @@
     <string name="dashboard_price_official">السعر الرسمي في الإمارات</string>
     <string name="dashboard_price_delta_up">▲ %1$s فلس مقارنة بـ %2$s</string>
     <string name="dashboard_price_delta_down">▼ %1$s فلس مقارنة بـ %2$s</string>
+    <string name="fill_quick_aed">%1$s د.إ</string>
+    <string name="fill_at_price">@ %1$s / %2$s</string>
+    <string name="fill_odometer_last_delta">الأخير: %1$s كم (+%2$s كم)</string>
+    <string name="fill_odo_step">+%1$s كم</string>
+    <string name="fill_more_details">تفاصيل إضافية</string>
+    <string name="fill_save">حفظ التعبئة</string>
+    <string name="fill_save_with_total">حفظ التعبئة · %1$s</string>
 </resources>

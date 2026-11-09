@@ -2,6 +2,27 @@
 
 package ae.sayyara.app.ui.screens.fill
 
+import ae.sayyara.app.ui.components.PillBadge
+import ae.sayyara.app.ui.theme.badgeColor
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
 import ae.sayyara.app.R
 import ae.sayyara.app.ui.LocalAppDeps
 import ae.sayyara.app.ui.appViewModel
@@ -138,25 +159,31 @@ private fun ColumnScope.FillForm(state: FillUiState, vm: FillViewModel, onCancel
     val fmt = rememberUiFormatter()
     val scanner = LocalAppDeps.current.receiptScanner
     val amountFocus = remember { FocusRequester() }
-    Text(
-        state.vehicleName,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    if (state.fromCar) {
-        Surface(color = MaterialTheme.colorScheme.secondaryContainer, shape = MaterialTheme.shapes.medium) {
-            Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.DirectionsCar, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.fill_from_car), style = MaterialTheme.typography.bodyMedium)
+    var moreDetails by rememberSaveable { mutableStateOf(state.showLevels || state.missedPrevious) }
+
+    // Header: vehicle + car-detected badge + scan receipt.
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            Text(state.vehicleName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+            if (state.fromCar) {
+                PillBadge("✨ " + stringResource(R.string.fill_from_car), MaterialTheme.colorScheme.secondary, Modifier.padding(top = 4.dp))
+            }
+        }
+        if (scanner != null) {
+            FilledTonalIconButton(onClick = { scanner.scan(vm::onReceipt) }, modifier = Modifier.size(48.dp)) {
+                Icon(Icons.Filled.CameraAlt, contentDescription = stringResource(R.string.fill_scan_receipt))
             }
         }
     }
+    if (state.scanFailed) {
+        Text(stringResource(R.string.fill_scan_failed), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+    }
 
-    // Amount: litres OR AED, the other one is computed.
+    // Tap 1: amount (AED first: UAE drivers pay round amounts at the pump).
     val unitLabel = stringResource(if (state.isElectric) R.string.unit_kwh else R.string.unit_litres)
+    val unitShort = stringResource(if (state.isElectric) R.string.unit_kwh else R.string.unit_litre)
     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-        val modes = AmountMode.entries
+        val modes = listOf(AmountMode.AED, AmountMode.LITRES)
         modes.forEachIndexed { i, mode ->
             SegmentedButton(
                 selected = state.amountMode == mode,
@@ -177,129 +204,168 @@ private fun ColumnScope.FillForm(state: FillUiState, vm: FillViewModel, onCancel
             value = state.litresText,
             onValueChange = vm::onLitres,
             label = stringResource(R.string.fill_amount_label, unitLabel),
-            suffix = unitLabel,
+            suffix = unitShort,
             modifier = Modifier.focusRequester(amountFocus),
-            supportingText = state.total?.let { stringResource(R.string.fill_computed_total, fmt.aed(it)) },
             imeAction = ImeAction.Done,
         )
-        AmountMode.AED -> NumberField(
-            value = state.totalText,
-            onValueChange = vm::onTotal,
-            label = stringResource(R.string.fill_total_label),
-            suffix = stringResource(R.string.currency_aed),
-            modifier = Modifier.focusRequester(amountFocus),
-            supportingText = state.amount?.let {
-                stringResource(R.string.fill_computed_amount, fmt.number(it, 2), unitLabel)
-            },
-            imeAction = ImeAction.Done,
-        )
-    }
-    LaunchedEffect(state.amountMode) {
-        if (!state.isEdit) runCatching { amountFocus.requestFocus() }
-    }
-
-    NumberField(
-        value = state.odometerText,
-        onValueChange = vm::onOdometer,
-        label = stringResource(R.string.fill_odometer),
-        suffix = stringResource(R.string.unit_km),
-        supportingText = when {
-            state.odometerEstimated -> stringResource(R.string.fill_odometer_estimated)
-            state.lastOdometerKm != null -> stringResource(R.string.fill_odometer_last, fmt.integer(state.lastOdometerKm))
-            else -> null
-        },
-    )
-
-    NumberField(
-        value = state.unitPriceText,
-        onValueChange = vm::onUnitPrice,
-        label = stringResource(if (state.isElectric) R.string.fill_price_per_kwh else R.string.fill_price_per_litre),
-        suffix = stringResource(R.string.currency_aed),
-        supportingText = priceSupport(state, fmt),
-    )
-    if (state.officialPrice != null && state.priceSource != PriceSource.OFFICIAL_MONTH) {
-        TextButton(onClick = vm::useOfficialPrice) {
-            Text(stringResource(R.string.fill_use_official_price, fmt.aed(state.officialPrice)))
+        AmountMode.AED -> {
+            NumberField(
+                value = state.totalText,
+                onValueChange = vm::onTotal,
+                label = stringResource(R.string.fill_total_label),
+                suffix = stringResource(R.string.currency_aed),
+                modifier = Modifier.focusRequester(amountFocus),
+                imeAction = ImeAction.Done,
+            )
+            // Quick pump denominations: no keyboard needed for the common AED 50 / 100 fill.
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(50, 100, 150, 200).forEach { aed ->
+                    FilterChip(
+                        selected = state.totalText.trim() == aed.toString(),
+                        onClick = { vm.onTotal(aed.toString()) },
+                        label = { Text(stringResource(R.string.fill_quick_aed, aed)) },
+                        modifier = Modifier.heightIn(min = 48.dp),
+                    )
+                }
+            }
         }
     }
-
-    if (state.grades.size > 1) {
-        ChoiceChips(
-            options = state.grades,
-            selected = state.grade,
-            onSelect = vm::onGrade,
-            label = { stringResource(it.labelRes()) },
-        )
+    // Live computed counterpart.
+    val computed = when (state.amountMode) {
+        AmountMode.AED -> state.amount?.let { "≈ ${fmt.number(it, 2)} $unitShort" }
+        AmountMode.LITRES -> state.total?.let { "≈ ${fmt.aed(it)}" }
     }
-
-    SwitchRow(
-        title = stringResource(R.string.fill_full_tank),
-        subtitle = stringResource(R.string.fill_full_tank_hint),
-        checked = state.isFull,
-        onCheckedChange = vm::onFull,
-    )
-    if (state.suggestPartial) {
+    val atPrice = state.unitPrice?.let { stringResource(R.string.fill_at_price, fmt.aed(it), unitShort) }
+    if (computed != null || atPrice != null) {
+        PillBadge(listOfNotNull(computed, atPrice).joinToString(" "), MaterialTheme.colorScheme.primary)
+    }
+    AnimatedVisibility(visible = state.suggestPartial, enter = fadeIn() + expandVertically(), exit = fadeOut() + shrinkVertically()) {
         AssistChip(
             onClick = vm::acceptPartial,
             label = { Text(stringResource(R.string.fill_suggest_partial)) },
             leadingIcon = { Icon(Icons.Filled.Lightbulb, contentDescription = null, Modifier.size(18.dp)) },
         )
     }
-    SwitchRow(
-        title = stringResource(R.string.fill_missed_previous),
-        subtitle = stringResource(R.string.fill_missed_previous_hint),
-        checked = state.missedPrevious,
-        onCheckedChange = vm::onMissedPrevious,
-    )
-
-    SwitchRow(
-        title = stringResource(if (state.isElectric) R.string.fill_battery_level else R.string.fill_tank_level),
-        checked = state.showLevels,
-        onCheckedChange = vm::onShowLevels,
-    )
-    if (state.showLevels) {
-        LevelSlider(stringResource(R.string.fill_level_before), state.levelBefore, vm::onLevelBefore)
-        LevelSlider(stringResource(R.string.fill_level_after), state.levelAfter, vm::onLevelAfter)
+    LaunchedEffect(state.amountMode) {
+        if (!state.isEdit) runCatching { amountFocus.requestFocus() }
     }
 
-    if (!state.isElectric) {
-        Text(stringResource(R.string.fill_station), style = MaterialTheme.typography.labelLarge)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            StationBrands.forEach { brand ->
-                FilterChip(
-                    selected = state.stationBrand == brand,
-                    onClick = { vm.onStation(brand) },
-                    label = { Text(brand) },
+    // Tap 2: odometer, prefilled, with quick steppers.
+    NumberField(
+        value = state.odometerText,
+        onValueChange = vm::onOdometer,
+        label = stringResource(R.string.fill_odometer),
+        suffix = stringResource(R.string.unit_km),
+        supportingText = when {
+            state.lastOdometerKm != null && state.odometer != null ->
+                stringResource(R.string.fill_odometer_last_delta, fmt.integer(state.lastOdometerKm), fmt.integer(state.odometer - state.lastOdometerKm))
+            state.lastOdometerKm != null -> stringResource(R.string.fill_odometer_last, fmt.integer(state.lastOdometerKm))
+            state.odometerEstimated -> stringResource(R.string.fill_odometer_estimated)
+            else -> null
+        },
+    )
+    val base = state.odometer ?: state.lastOdometerKm
+    if (base != null) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(100, 400).forEach { step ->
+                AssistChip(
+                    onClick = { vm.onOdometer((base + step).roundToInt().toString()) },
+                    label = { Text(stringResource(R.string.fill_odo_step, step)) },
+                    modifier = Modifier.heightIn(min = 48.dp),
                 )
             }
         }
     }
 
-    if (scanner != null) {
-        OutlinedButton(onClick = { scanner.scan(vm::onReceipt) }, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.CameraAlt, contentDescription = null)
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.fill_scan_receipt))
+    // Prefilled defaults: grade and station chips, pump-coded.
+    if (state.grades.size > 1) {
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            state.grades.forEach { g ->
+                FilterChip(
+                    selected = state.grade == g,
+                    onClick = { vm.onGrade(g) },
+                    label = { Text(stringResource(g.labelRes())) },
+                    leadingIcon = { Box(Modifier.size(10.dp).background(g.badgeColor(), CircleShape)) },
+                    colors = FilterChipDefaults.filterChipColors(selectedContainerColor = g.badgeColor().copy(alpha = 0.18f)),
+                    modifier = Modifier.heightIn(min = 48.dp),
+                )
+            }
         }
-        if (state.scanFailed) {
-            Text(
-                stringResource(R.string.fill_scan_failed),
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
+    }
+    if (!state.isElectric) {
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            StationBrands.forEach { brand ->
+                FilterChip(
+                    selected = state.stationBrand == brand,
+                    onClick = { vm.onStation(brand) },
+                    label = { Text(brand) },
+                    modifier = Modifier.heightIn(min = 48.dp),
+                )
+            }
+        }
+    }
+    SwitchRow(
+        title = stringResource(R.string.fill_full_tank),
+        subtitle = stringResource(R.string.fill_full_tank_hint),
+        checked = state.isFull,
+        onCheckedChange = vm::onFull,
+    )
+
+    // Collapsible details keep the primary sheet short.
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 48.dp).clip(MaterialTheme.shapes.medium).clickable { moreDetails = !moreDetails }.padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(stringResource(R.string.fill_more_details), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+        Icon(if (moreDetails) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore, contentDescription = null)
+    }
+    AnimatedVisibility(visible = moreDetails) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            NumberField(
+                value = state.unitPriceText,
+                onValueChange = vm::onUnitPrice,
+                label = stringResource(if (state.isElectric) R.string.fill_price_per_kwh else R.string.fill_price_per_litre),
+                suffix = stringResource(R.string.currency_aed),
+                supportingText = priceSupport(state, fmt),
             )
+            if (state.officialPrice != null && state.priceSource != PriceSource.OFFICIAL_MONTH) {
+                TextButton(onClick = vm::useOfficialPrice) {
+                    Text(stringResource(R.string.fill_use_official_price, fmt.aed(state.officialPrice)))
+                }
+            }
+            SwitchRow(
+                title = stringResource(R.string.fill_missed_previous),
+                subtitle = stringResource(R.string.fill_missed_previous_hint),
+                checked = state.missedPrevious,
+                onCheckedChange = vm::onMissedPrevious,
+            )
+            SwitchRow(
+                title = stringResource(if (state.isElectric) R.string.fill_battery_level else R.string.fill_tank_level),
+                checked = state.showLevels,
+                onCheckedChange = vm::onShowLevels,
+            )
+            if (state.showLevels) {
+                LevelSlider(stringResource(R.string.fill_level_before), state.levelBefore, vm::onLevelBefore)
+                LevelSlider(stringResource(R.string.fill_level_after), state.levelAfter, vm::onLevelAfter)
+            }
         }
     }
 
     WarningList(state.warnings.map { warningText(it) })
 
+    // Tap 3: save.
     Button(
         onClick = vm::save,
         enabled = state.canSave,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(52.dp),
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        shape = MaterialTheme.shapes.medium,
     ) {
-        Text(stringResource(R.string.action_save))
+        val total = state.total
+        Text(
+            if (total != null) stringResource(R.string.fill_save_with_total, fmt.aed(total)) else stringResource(R.string.fill_save),
+            style = MaterialTheme.typography.titleMedium,
+            maxLines = 1,
+        )
     }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         TextButton(onClick = onCancel) { Text(stringResource(R.string.action_cancel)) }
