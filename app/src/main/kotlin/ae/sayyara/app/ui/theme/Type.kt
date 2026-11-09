@@ -34,3 +34,17 @@ val SayyaraTypography = Typography(
 val HeroNumberStyle = TextStyle(
     fontSize = 44.sp, fontWeight = FontWeight.Bold, lineHeight = 50.sp, fontFeatureSettings = TABULAR,
 )
+
+/** Adds tabular figures to any style (AED, km, km/L, L must never jitter or misalign). */
+fun TextStyle.tabular(): TextStyle = copy(fontFeatureSettings = TABULAR)
+
+/** Metric sizes for [ae.sayyara.app.ui.components.TabularMetricText]. */
+enum class MetricSize(val style: TextStyle, val unitStyle: TextStyle) {
+    Hero(HeroNumberStyle, TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = TABULAR)),
+    Large(TextStyle(fontSize = 32.sp, lineHeight = 38.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = TABULAR),
+        TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = TABULAR)),
+    Medium(TextStyle(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = TABULAR),
+        TextStyle(fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = TABULAR)),
+    Small(TextStyle(fontSize = 16.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = TABULAR),
+        TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = TABULAR)),
+}

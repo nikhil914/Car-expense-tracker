@@ -4,16 +4,17 @@ import ae.sayyara.app.ui.settings.ThemeMode
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 
 private val LightColors = lightColorScheme(
     primary = PrimaryLight, onPrimary = OnPrimaryLight,
@@ -51,15 +52,6 @@ private val DarkColors = darkColorScheme(
     errorContainer = Color(0xFF3B1212), onErrorContainer = Color(0xFFFECACA),
 )
 
-/** M3 Expressive shape tension: 24 dp outer cards, 14 dp nested blocks, 8 dp small chips. */
-val SayyaraShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(10.dp),
-    medium = RoundedCornerShape(14.dp),
-    large = RoundedCornerShape(24.dp),
-    extraLarge = RoundedCornerShape(28.dp),
-)
-
 @Composable
 fun isDarkTheme(mode: ThemeMode): Boolean = when (mode) {
     ThemeMode.SYSTEM -> isSystemInDarkTheme()
@@ -86,5 +78,46 @@ fun SayyaraTheme(
         dark -> DarkColors
         else -> LightColors
     }
-    MaterialTheme(colorScheme = colors, typography = SayyaraTypography, shapes = SayyaraShapes, content = content)
+    CompositionLocalProvider(LocalSayyaraColors provides if (dark) DarkExtendedColors else LightExtendedColors) {
+        MaterialTheme(colorScheme = colors, typography = SayyaraTypography, shapes = SayyaraShapes, content = content)
+    }
+}
+
+/**
+ * Brand tokens Material 3 has no slot for. Read with `SayyaraTheme.colors`.
+ * Grade colours are the same in both themes (familiar pump coding).
+ */
+@Immutable
+data class SayyaraExtendedColors(
+    val hairline: Color,
+    val nested: Color,
+    val success: Color,
+    val warning: Color,
+    val alert: Color,
+    val alertContainer: Color,
+)
+
+internal val LightExtendedColors = SayyaraExtendedColors(
+    hairline = HairlineLight,
+    nested = StoneLight,
+    success = Color(0xFF0F9D6E),
+    warning = AccentLight,
+    alert = AlertRed,
+    alertContainer = Color(0xFFFDE8E8),
+)
+
+internal val DarkExtendedColors = SayyaraExtendedColors(
+    hairline = HairlineDark,
+    nested = GraphiteDark,
+    success = Color(0xFF34D399),
+    warning = AccentDark,
+    alert = Color(0xFFF87171),
+    alertContainer = Color(0xFF3B1212),
+)
+
+val LocalSayyaraColors = staticCompositionLocalOf { LightExtendedColors }
+
+object SayyaraTheme {
+    val colors: SayyaraExtendedColors
+        @Composable @ReadOnlyComposable get() = LocalSayyaraColors.current
 }
