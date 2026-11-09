@@ -251,20 +251,21 @@ private fun ColumnScope.FillForm(state: FillUiState, vm: FillViewModel, onCancel
     }
 
     // Tap 2: odometer, prefilled, with quick steppers.
+    val odo = state.odometer
     NumberField(
         value = state.odometerText,
         onValueChange = vm::onOdometer,
         label = stringResource(R.string.fill_odometer),
         suffix = stringResource(R.string.unit_km),
         supportingText = when {
-            state.lastOdometerKm != null && state.odometer != null ->
-                stringResource(R.string.fill_odometer_last_delta, fmt.integer(state.lastOdometerKm), fmt.integer(state.odometer - state.lastOdometerKm))
+            state.lastOdometerKm != null && odo != null ->
+                stringResource(R.string.fill_odometer_last_delta, fmt.integer(state.lastOdometerKm), fmt.integer(odo - state.lastOdometerKm))
             state.lastOdometerKm != null -> stringResource(R.string.fill_odometer_last, fmt.integer(state.lastOdometerKm))
             state.odometerEstimated -> stringResource(R.string.fill_odometer_estimated)
             else -> null
         },
     )
-    val base = state.odometer ?: state.lastOdometerKm
+    val base = odo ?: state.lastOdometerKm
     if (base != null) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf(100, 400).forEach { step ->
