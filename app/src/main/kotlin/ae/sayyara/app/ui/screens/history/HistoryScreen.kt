@@ -2,6 +2,12 @@
 
 package ae.sayyara.app.ui.screens.history
 
+import ae.sayyara.app.ui.components.CategoryIcon
+import ae.sayyara.app.ui.components.PillBadge
+import ae.sayyara.app.ui.components.TintedIcon
+import ae.sayyara.app.ui.theme.badgeColor
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.ui.text.style.TextOverflow
 import ae.sayyara.app.R
 import ae.sayyara.app.ui.appViewModel
 import ae.sayyara.app.ui.common.labelRes
@@ -93,27 +99,46 @@ fun HistoryScreen(
                 modifier = Modifier.fillMaxSize().padding(padding),
                 contentPadding = PaddingValues(bottom = 88.dp),
             ) {
-                items(state.items, key = { it.key }) { item ->
-                    SwipeToDeleteRow(
-                        onDelete = {
-                            vm.delete(item)
-                            scope.launch {
-                                snackbar.currentSnackbarData?.dismiss()
-                                val result = snackbar.showSnackbar(
-                                    message = context.getString(R.string.history_deleted),
-                                    actionLabel = context.getString(R.string.action_undo),
-                                    duration = SnackbarDuration.Long,
-                                )
-                                if (result == SnackbarResult.ActionPerformed) vm.undoDelete(item)
+                // Revolut-style: one header per day, newest first.
+                val zone = java.time.ZoneId.of("Asia/Dubai")
+                val groups = state.items.groupBy { item ->
+                    val ts = when (item) {
+                        is TimelineItem.Fill -> item.event.timestamp
+                        is TimelineItem.Cost -> item.expense.timestamp
+                    }
+                    java.time.Instant.ofEpochMilli(ts.toEpochMilliseconds()).atZone(zone).toLocalDate()
+                }
+                groups.forEach { (day, dayItems) ->
+                    stickyHeader(key = "h-$day") {
+                        Text(
+                            fmt.date(kotlinx.datetime.LocalDate(day.year, day.monthValue, day.dayOfMonth)).uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)
+                                .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 6.dp),
+                        )
+                    }
+                    items(dayItems, key = { it.key }) { item ->
+                        SwipeToDeleteRow(
+                            onDelete = {
+                                vm.delete(item)
+                                scope.launch {
+                                    snackbar.currentSnackbarData?.dismiss()
+                                    val result = snackbar.showSnackbar(
+                                        message = context.getString(R.string.history_deleted),
+                                        actionLabel = context.getString(R.string.action_undo),
+                                        duration = SnackbarDuration.Long,
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) vm.undoDelete(item)
+                                }
+                            },
+                        ) {
+                            when (item) {
+                                is TimelineItem.Fill -> FillRow(item, fmt) { onEditFill(item.event.id) }
+                                is TimelineItem.Cost -> ExpenseRow(item, fmt) { onEditExpense(item.expense.id) }
                             }
-                        },
-                    ) {
-                        when (item) {
-                            is TimelineItem.Fill -> FillRow(item, fmt) { onEditFill(item.event.id) }
-                            is TimelineItem.Cost -> ExpenseRow(item, fmt) { onEditExpense(item.expense.id) }
                         }
                     }
-                    HorizontalDivider()
                 }
             }
         }
@@ -145,7 +170,7 @@ private fun SwipeToDeleteRow(onDelete: () -> Unit, content: @Composable () -> Un
             }
         },
     ) {
-        Box(Modifier.background(MaterialTheme.colorScheme.surface)) { content() }
+        Box(Modifier.background(MaterialTheme.colorScheme.background)) { content() }
     }
 }
 
@@ -157,30 +182,38 @@ private fun FillRow(item: TimelineItem.Fill, fmt: UiFormatter, onClick: () -> Un
     val total = e.totalAed ?: e.unitPriceAed?.let { it * e.amount }
     ListItem(
         modifier = Modifier.clickable(onClick = onClick),
-        leadingContent = { Icon(Icons.Filled.LocalGasStation, contentDescription = null) },
+        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background),
+        leadingContent = { TintedIcon(Icons.Filled.LocalGasStation, e.grade.badgeColor(), size = 40.dp) },
         headlineContent = {
-            Text(stringResource(R.string.history_fill_headline, fmt.number(e.amount, 2), unit, stringResource(e.grade.labelRes())))
+            Text(
+                stringResource(R.string.history_fill_headline, fmt.number(e.amount, 2), unit, stringResource(e.grade.labelRes())),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         },
         supportingContent = {
             Column {
                 Text(
                     listOfNotNull(
-                        fmt.date(e.timestamp),
                         stringResource(R.string.history_odometer, fmt.integer(e.odometerKm)),
-                        item.kmSincePrevious?.takeIf { it > 0 }?.let { stringResource(R.string.history_km_since, fmt.integer(it)) },
                         e.stationName,
                     ).joinToString(" · "),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
+                item.kmSincePrevious?.takeIf { it > 0 }?.let {
+                    PillBadge(stringResource(R.string.history_km_since, fmt.integer(it)), MaterialTheme.colorScheme.primary, Modifier.padding(top = 4.dp))
+                }
                 val flags = listOfNotNull(
                     if (!e.isFull) stringResource(R.string.history_partial) else null,
                     if (e.missedPrevious) stringResource(R.string.history_missed) else null,
                 )
                 if (flags.isNotEmpty()) {
-                    Text(flags.joinToString(" · "), color = MaterialTheme.colorScheme.tertiary)
+                    Text(flags.joinToString(" · "), color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelMedium)
                 }
             }
         },
-        trailingContent = { if (total != null) Text(fmt.aed(total), style = MaterialTheme.typography.titleMedium) },
+        trailingContent = { if (total != null) Text(fmt.aed(total), style = MaterialTheme.typography.titleMedium, maxLines = 1) },
     )
 }
 
@@ -192,19 +225,16 @@ private fun ExpenseRow(item: TimelineItem.Cost, fmt: UiFormatter, onClick: () ->
         ?: stringResource(x.category.labelRes())
     ListItem(
         modifier = Modifier.clickable(onClick = onClick),
-        leadingContent = { Icon(Icons.Filled.Receipt, contentDescription = null) },
-        headlineContent = { Text(title) },
-        supportingContent = {
-            Row {
-                Text(stringResource(x.category.labelRes()))
-                Spacer(Modifier.width(8.dp))
-                Text(fmt.date(x.timestamp))
-            }
-        },
+        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background),
+        leadingContent = { CategoryIcon(x.category, size = 40.dp) },
+        headlineContent = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        supportingContent = { Text(stringResource(x.category.labelRes()), maxLines = 1) },
         trailingContent = {
             Text(
                 if (x.isIncome) stringResource(R.string.history_income, fmt.aed(x.amountAed)) else fmt.aed(x.amountAed),
                 style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                color = if (x.isIncome) ae.sayyara.app.ui.theme.TrendDownGreen else MaterialTheme.colorScheme.onSurface,
             )
         },
     )

@@ -2,6 +2,8 @@
 
 package ae.sayyara.app.ui.components
 
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.PathEffect
 import ae.sayyara.app.R
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -131,6 +133,7 @@ fun LineChart(
     val measurer = rememberTextMeasurer()
     val style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
     val grid = MaterialTheme.colorScheme.outlineVariant
+    val core = MaterialTheme.colorScheme.surfaceContainerLow
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     Canvas(
         modifier
@@ -160,17 +163,41 @@ fun LineChart(
         series.forEach { s ->
             val pts = s.points.sortedBy { it.x }.map { Offset(px(it.x), py(it.y)) }
             if (s.drawLine && pts.size > 1) {
+                // Smooth curve: cubic segments with horizontal control points at the midpoint.
                 val path = Path().apply {
                     moveTo(pts.first().x, pts.first().y)
-                    pts.drop(1).forEach { lineTo(it.x, it.y) }
+                    for (i in 1 until pts.size) {
+                        val a = pts[i - 1]
+                        val b = pts[i]
+                        val mx = (a.x + b.x) / 2f
+                        cubicTo(mx, a.y, mx, b.y, b.x, b.y)
+                    }
                 }
-                drawPath(
-                    path,
-                    color = s.color,
-                    style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
+                // Gradient area under the line.
+                val area = Path().apply {
+                    addPath(path)
+                    lineTo(pts.last().x, plot.bottom)
+                    lineTo(pts.first().x, plot.bottom)
+                    close()
+                }
+                drawPath(area, Brush.verticalGradient(listOf(s.color.copy(alpha = 0.25f), Color.Transparent), startY = plot.top, endY = plot.bottom))
+                // Dashed average reference line.
+                val avgY = py(s.points.map { it.y }.average())
+                drawLine(
+                    color = s.color.copy(alpha = 0.55f),
+                    start = Offset(minOf(plot.left, plot.right), avgY),
+                    end = Offset(maxOf(plot.left, plot.right), avgY),
+                    strokeWidth = 1.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(6.dp.toPx(), 5.dp.toPx())),
                 )
+                drawPath(path, color = s.color, style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
             }
-            pts.forEach { drawCircle(s.color, radius = s.dotRadius.toPx(), center = it) }
+            // Data points with an inner core in the card colour.
+            pts.forEach {
+                val r = s.dotRadius.toPx() + 1.dp.toPx()
+                drawCircle(s.color, radius = r, center = it)
+                drawCircle(core, radius = r * 0.5f, center = it)
+            }
         }
     }
 }

@@ -10,8 +10,8 @@ android {
         applicationId = "ae.sayyara.app" // same package as phone app; separate AAOS APK/track
         minSdk = 29
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.1.3"
+        versionCode = 5
+        versionName = "0.1.4"
     }
     useLibrary("android.car")
     signingConfigs {
