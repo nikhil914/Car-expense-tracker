@@ -2,8 +2,9 @@ package ae.sayyara.app.ui.navigation
 
 import ae.sayyara.app.R
 import ae.sayyara.app.ui.screens.home.HomeScreen
-import ae.sayyara.app.ui.screens.expense.ExpenseScreen
-import ae.sayyara.app.ui.screens.fill.FillSheet
+import ae.sayyara.app.ui.screens.fill.AddFillUpSheet
+import ae.sayyara.app.ui.screens.expense.AddExpenseSheet
+import ae.sayyara.app.ui.screens.expense.ExpenseSheetRequest
 import ae.sayyara.app.ui.screens.fill.FillSheetRequest
 import ae.sayyara.app.ui.screens.history.HistoryScreen
 import ae.sayyara.app.ui.screens.importer.ImportScreen
@@ -64,6 +65,7 @@ private val tabs = listOf(
 fun AppNavHost(onboardingDone: Boolean, pendingLink: DeepLinkAction?, onLinkHandled: () -> Unit) {
     val nav = rememberNavController()
     var fill by remember { mutableStateOf<FillSheetRequest?>(null) }
+    var expense by remember { mutableStateOf<ExpenseSheetRequest?>(null) }
     val entry by nav.currentBackStackEntryAsState()
     val dest = entry?.destination
     val showBar = tabs.any { t -> dest?.hasRoute(t.cls) == true }
@@ -72,7 +74,7 @@ fun AppNavHost(onboardingDone: Boolean, pendingLink: DeepLinkAction?, onLinkHand
         when (val l = pendingLink ?: return@LaunchedEffect) {
             is DeepLinkAction.AddFill -> fill = FillSheetRequest(draft = l.draft)
             DeepLinkAction.Dashboard -> nav.navigate(DashboardRoute) { launchSingleTop = true }
-            is DeepLinkAction.AddExpense -> nav.navigate(ExpenseEditRoute(category = l.category?.name))
+            is DeepLinkAction.AddExpense -> expense = ExpenseSheetRequest(category = l.category)
             is DeepLinkAction.Import -> nav.navigate(ImportRoute(l.uri?.toString()))
             DeepLinkAction.Route -> nav.navigate(RouteCostRoute)
         }
@@ -115,8 +117,8 @@ fun AppNavHost(onboardingDone: Boolean, pendingLink: DeepLinkAction?, onLinkHand
             composable<HistoryRoute> {
                 HistoryScreen(
                     onEditFill = { fill = FillSheetRequest(eventId = it) },
-                    onEditExpense = { nav.navigate(ExpenseEditRoute(expenseId = it)) },
-                    onAddExpense = { nav.navigate(ExpenseEditRoute()) },
+                    onEditExpense = { expense = ExpenseSheetRequest(expenseId = it) },
+                    onAddExpense = { expense = ExpenseSheetRequest() },
                 )
             }
             composable<StatsRoute> { StatsScreen() }
@@ -126,10 +128,6 @@ fun AppNavHost(onboardingDone: Boolean, pendingLink: DeepLinkAction?, onLinkHand
                     onRoute = { nav.navigate(RouteCostRoute) }, onImport = { nav.navigate(ImportRoute()) },
                     onSettings = { nav.navigate(SettingsRoute) }, onAbout = { nav.navigate(AboutRoute) },
                 )
-            }
-            composable<ExpenseEditRoute> { e ->
-                val r = e.toRoute<ExpenseEditRoute>()
-                ExpenseScreen(r.expenseId, r.category, onBack = { nav.popBackStack() })
             }
             composable<RouteCostRoute> { RouteCostScreen(onBack = { nav.popBackStack() }) }
             composable<RemindersRoute> {
@@ -146,5 +144,6 @@ fun AppNavHost(onboardingDone: Boolean, pendingLink: DeepLinkAction?, onLinkHand
         }
     }
 
-    fill?.let { req -> FillSheet(req, onDismiss = { fill = null }) }
+    fill?.let { req -> AddFillUpSheet(req, onDismiss = { fill = null }) }
+    expense?.let { req -> AddExpenseSheet(req, onDismiss = { expense = null }) }
 }

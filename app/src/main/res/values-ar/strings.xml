@@ -295,4 +295,9 @@
     <string name="fill_more_details">تفاصيل إضافية</string>
     <string name="fill_save">حفظ التعبئة</string>
     <string name="fill_save_with_total">حفظ التعبئة · %1$s</string>
+    <string name="fill_from_car_hint">تحقق من الكمية ثم احفظ. السعر هو السعر الرسمي في الإمارات لهذا الشهر.</string>
+    <string name="fill_official_pill">رسمي · %1$s · %2$s / %3$s</string>
+    <string name="fill_mark_partial">تحديد كجزئية</string>
+    <string name="expense_save_with_total">حفظ المصروف · %1$s</string>
+    <string name="parking_sms_preview">إلى %1$s: %2$s</string>
 </resources>

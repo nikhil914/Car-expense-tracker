@@ -2,6 +2,14 @@
 
 package ae.sayyara.app.ui.screens.fill
 
+import ae.sayyara.app.ui.ReceiptScanAction
+import ae.sayyara.app.ui.components.TintedIcon
+import ae.sayyara.app.ui.theme.NestedShape
+import ae.sayyara.app.ui.theme.PillShape
+import ae.sayyara.core.ocr.ReceiptFields
+import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material3.Surface
+import androidx.compose.ui.tooling.preview.Preview
 import ae.sayyara.app.ui.components.PillBadge
 import ae.sayyara.app.ui.theme.badgeColor
 import androidx.compose.animation.AnimatedVisibility
@@ -70,7 +78,6 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -103,7 +110,7 @@ data class FillSheetRequest(val eventId: Id? = null, val draft: FillDraft? = nul
  * (odometer, grade and the official monthly price are prefilled; full tank defaults to on).
  */
 @Composable
-fun FillSheet(request: FillSheetRequest, onDismiss: () -> Unit) {
+fun AddFillUpSheet(request: FillSheetRequest, onDismiss: () -> Unit) {
     // A ViewModelStore scoped to this sheet instance, cleared when the sheet leaves composition.
     val owner = remember(request) {
         object : ViewModelStoreOwner {
@@ -123,13 +130,13 @@ fun FillSheet(request: FillSheetRequest, onDismiss: () -> Unit) {
             val vm = appViewModel { FillViewModel(it.container, request.eventId, request.draft) }
             val state by vm.state.collectAsStateWithLifecycle()
             LaunchedEffect(state.done) { if (state.done) close() }
-            FillSheetContent(state, vm, onCancel = close)
+            FillSheetContent(state, vm, LocalAppDeps.current.receiptScanner, onCancel = close)
         }
     }
 }
 
 @Composable
-private fun FillSheetContent(state: FillUiState, vm: FillViewModel, onCancel: () -> Unit) {
+fun FillSheetContent(state: FillUiState, vm: FillActions, scanner: ReceiptScanAction?, onCancel: () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -139,25 +146,21 @@ private fun FillSheetContent(state: FillUiState, vm: FillViewModel, onCancel: ()
             .padding(start = 24.dp, end = 24.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            stringResource(if (state.isEdit) R.string.fill_title_edit else R.string.fill_title_add),
-            style = MaterialTheme.typography.headlineSmall,
-        )
+        FillHeader(state)
         when {
             state.loading -> CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
             state.noVehicle -> {
                 Text(stringResource(R.string.fill_no_vehicle), style = MaterialTheme.typography.bodyLarge)
                 TextButton(onClick = onCancel) { Text(stringResource(R.string.action_close)) }
             }
-            else -> FillForm(state, vm, onCancel)
+            else -> FillForm(state, vm, scanner, onCancel)
         }
     }
 }
 
 @Composable
-private fun ColumnScope.FillForm(state: FillUiState, vm: FillViewModel, onCancel: () -> Unit) {
+private fun ColumnScope.FillForm(state: FillUiState, vm: FillActions, scanner: ReceiptScanAction?, onCancel: () -> Unit) {
     val fmt = rememberUiFormatter()
-    val scanner = LocalAppDeps.current.receiptScanner
     val amountFocus = remember { FocusRequester() }
     var moreDetails by rememberSaveable { mutableStateOf(state.showLevels || state.missedPrevious) }
 
@@ -165,9 +168,6 @@ private fun ColumnScope.FillForm(state: FillUiState, vm: FillViewModel, onCancel
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text(state.vehicleName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
-            if (state.fromCar) {
-                PillBadge("✨ " + stringResource(R.string.fill_from_car), MaterialTheme.colorScheme.secondary, Modifier.padding(top = 4.dp))
-            }
         }
         if (scanner != null) {
             FilledTonalIconButton(onClick = { scanner.scan(vm::onReceipt) }, modifier = Modifier.size(48.dp)) {
@@ -235,16 +235,10 @@ private fun ColumnScope.FillForm(state: FillUiState, vm: FillViewModel, onCancel
         AmountMode.AED -> state.amount?.let { "≈ ${fmt.number(it, 2)} $unitShort" }
         AmountMode.LITRES -> state.total?.let { "≈ ${fmt.aed(it)}" }
     }
-    val atPrice = state.unitPrice?.let { stringResource(R.string.fill_at_price, fmt.aed(it), unitShort) }
-    if (computed != null || atPrice != null) {
-        PillBadge(listOfNotNull(computed, atPrice).joinToString(" "), MaterialTheme.colorScheme.primary)
-    }
+    if (computed != null) PillBadge(computed, MaterialTheme.colorScheme.primary)
+    OfficialPricePill(state, unitShort, fmt, onUseOfficial = vm::useOfficialPrice)
     AnimatedVisibility(visible = state.suggestPartial, enter = fadeIn() + expandVertically(), exit = fadeOut() + shrinkVertically()) {
-        AssistChip(
-            onClick = vm::acceptPartial,
-            label = { Text(stringResource(R.string.fill_suggest_partial)) },
-            leadingIcon = { Icon(Icons.Filled.Lightbulb, contentDescription = null, Modifier.size(18.dp)) },
-        )
+        PartialFillBanner(onAccept = vm::acceptPartial)
     }
     LaunchedEffect(state.amountMode) {
         if (!state.isEdit) runCatching { amountFocus.requestFocus() }
@@ -378,6 +372,102 @@ private fun ColumnScope.FillForm(state: FillUiState, vm: FillViewModel, onCancel
     }
 }
 
+/** Everything the fill-up form can ask of its owner; FillViewModel implements it, previews fake it. */
+interface FillActions {
+    fun onOdometer(text: String)
+    fun onAmountMode(mode: AmountMode)
+    fun onLitres(text: String)
+    fun onTotal(text: String)
+    fun onUnitPrice(text: String)
+    fun useOfficialPrice()
+    fun onGrade(grade: FuelGrade)
+    fun onFull(full: Boolean)
+    fun onMissedPrevious(missed: Boolean)
+    fun onShowLevels(show: Boolean)
+    fun onLevelBefore(v: Float)
+    fun onLevelAfter(v: Float)
+    fun onStation(brand: String)
+    fun acceptPartial()
+    fun onReceipt(fields: ReceiptFields?)
+    fun save()
+    fun delete()
+}
+
+/** Title row; car-detected fill-ups get a tinted "Detected by your car" header. */
+@Composable
+private fun FillHeader(state: FillUiState) {
+    if (state.fromCar) {
+        Row(
+            Modifier.fillMaxWidth()
+                .background(MaterialTheme.colorScheme.secondaryContainer, NestedShape)
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            TintedIcon(Icons.Filled.DirectionsCar, MaterialTheme.colorScheme.secondary, size = 40.dp)
+            Column(Modifier.weight(1f)) {
+                Text("✨ " + stringResource(R.string.fill_from_car), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                Text(stringResource(R.string.fill_from_car_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+            }
+        }
+    } else {
+        Text(
+            stringResource(if (state.isEdit) R.string.fill_title_edit else R.string.fill_title_add),
+            style = MaterialTheme.typography.headlineSmall,
+        )
+    }
+}
+
+/** Always-visible price source: official monthly UAE price, or a tap to switch back to it. */
+@Composable
+private fun OfficialPricePill(state: FillUiState, unitShort: String, fmt: ae.sayyara.app.ui.format.UiFormatter, onUseOfficial: () -> Unit) {
+    val price = state.unitPrice
+    val month = state.priceMonth
+    when {
+        state.priceSource == PriceSource.OFFICIAL_MONTH && price != null && month != null -> Row(
+            Modifier.background(MaterialTheme.colorScheme.primaryContainer, PillShape).padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Icon(Icons.Filled.Verified, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+            Text(
+                stringResource(R.string.fill_official_pill, fmt.monthShort(month), fmt.aed(price), unitShort),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                maxLines = 1,
+            )
+        }
+        state.officialPrice != null -> AssistChip(
+            onClick = onUseOfficial,
+            label = { Text(stringResource(R.string.fill_use_official_price, fmt.aed(state.officialPrice))) },
+            leadingIcon = { Icon(Icons.Filled.Verified, contentDescription = null, Modifier.size(18.dp)) },
+            modifier = Modifier.heightIn(min = 48.dp),
+        )
+        price != null -> PillBadge(stringResource(R.string.fill_at_price, fmt.aed(price), unitShort), MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** Round AED amount or small volume: suggest marking the fill as partial. */
+@Composable
+private fun PartialFillBanner(onAccept: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondaryContainer, NestedShape)
+            .padding(start = 14.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Icon(Icons.Filled.Lightbulb, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+        Text(
+            stringResource(R.string.fill_suggest_partial),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier.weight(1f),
+        )
+        TextButton(onClick = onAccept, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.fill_mark_partial)) }
+    }
+}
+
 @Composable
 private fun priceSupport(state: FillUiState, fmt: ae.sayyara.app.ui.format.UiFormatter): String? {
     val month = state.priceMonth
@@ -419,3 +509,58 @@ private fun warningText(w: ValidationWarning): String = when (w.code) {
     WarningCodes.LEVEL_OUT_OF_RANGE -> stringResource(R.string.warning_level_out_of_range)
     else -> w.message
 }
+
+
+// ---------------------------------------------------------------- previews
+
+private object NoFillActions : FillActions {
+    override fun onOdometer(text: String) = Unit
+    override fun onAmountMode(mode: AmountMode) = Unit
+    override fun onLitres(text: String) = Unit
+    override fun onTotal(text: String) = Unit
+    override fun onUnitPrice(text: String) = Unit
+    override fun useOfficialPrice() = Unit
+    override fun onGrade(grade: FuelGrade) = Unit
+    override fun onFull(full: Boolean) = Unit
+    override fun onMissedPrevious(missed: Boolean) = Unit
+    override fun onShowLevels(show: Boolean) = Unit
+    override fun onLevelBefore(v: Float) = Unit
+    override fun onLevelAfter(v: Float) = Unit
+    override fun onStation(brand: String) = Unit
+    override fun acceptPartial() = Unit
+    override fun onReceipt(fields: ReceiptFields?) = Unit
+    override fun save() = Unit
+    override fun delete() = Unit
+}
+
+private val previewFill = FillUiState(
+    loading = false,
+    vehicleName = "Nissan Altima · AUH 5",
+    odometerText = "45622",
+    lastOdometerKm = 45210.0,
+    amountMode = AmountMode.AED,
+    totalText = "100",
+    unitPriceText = "4.04",
+    priceSource = PriceSource.OFFICIAL_MONTH,
+    officialPrice = 4.04,
+    priceMonth = ae.sayyara.core.model.YearMonth(2026, 11),
+    grades = listOf(FuelGrade.SUPER_98, FuelGrade.SPECIAL_95, FuelGrade.E_PLUS_91, FuelGrade.DIESEL),
+    grade = FuelGrade.SPECIAL_95,
+    stationBrand = "ADNOC",
+    suggestPartial = true,
+)
+
+@Composable
+private fun FillPreview(state: FillUiState, dark: Boolean) {
+    ae.sayyara.app.ui.theme.SayyaraTheme(themeMode = if (dark) ae.sayyara.app.ui.settings.ThemeMode.DARK else ae.sayyara.app.ui.settings.ThemeMode.LIGHT) {
+        Surface(color = MaterialTheme.colorScheme.surfaceContainerLow) {
+            FillSheetContent(state, NoFillActions, scanner = ReceiptScanAction { }, onCancel = {})
+        }
+    }
+}
+
+@Preview(name = "Light - EN", heightDp = 1300) @Composable private fun FillLight() = FillPreview(previewFill, false)
+@Preview(name = "Dark - EN", heightDp = 1300) @Composable private fun FillDark() = FillPreview(previewFill, true)
+@Preview(name = "Light - AR (RTL)", locale = "ar", heightDp = 1300) @Composable private fun FillArabic() = FillPreview(previewFill, false)
+@Preview(name = "Detected by car - EN", heightDp = 1300) @Composable private fun FillFromCar() =
+    FillPreview(previewFill.copy(fromCar = true, amountMode = AmountMode.LITRES, totalText = "", litresText = "32.5", suggestPartial = false), false)

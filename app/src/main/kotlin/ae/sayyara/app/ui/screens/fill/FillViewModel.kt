@@ -101,7 +101,7 @@ class FillViewModel(
     private val container: AppContainer,
     private val editEventId: Id?,
     private val draft: FillDraft?,
-) : ViewModel() {
+) : ViewModel(), FillActions {
 
     private val _state = MutableStateFlow(FillUiState())
     val state: StateFlow<FillUiState> = _state.asStateFlow()
@@ -206,9 +206,9 @@ class FillViewModel(
     private fun monthOf(instant: Instant): YearMonth =
         YearMonth.of(instant.toLocalDateTime(TimeZone.currentSystemDefault()).date)
 
-    fun onOdometer(text: String) = edit { it.copy(odometerText = text, odometerEstimated = false) }
+    override fun onOdometer(text: String) = edit { it.copy(odometerText = text, odometerEstimated = false) }
 
-    fun onAmountMode(mode: AmountMode) = edit { s ->
+    override fun onAmountMode(mode: AmountMode) = edit { s ->
         if (s.amountMode == mode) return@edit s
         // Carry the computed value across so switching never loses input.
         when (mode) {
@@ -217,11 +217,11 @@ class FillViewModel(
         }
     }
 
-    fun onLitres(text: String) = edit { it.copy(litresText = text) }
+    override fun onLitres(text: String) = edit { it.copy(litresText = text) }
 
-    fun onTotal(text: String) = edit { it.copy(totalText = text) }
+    override fun onTotal(text: String) = edit { it.copy(totalText = text) }
 
-    fun onUnitPrice(text: String) = edit {
+    override fun onUnitPrice(text: String) = edit {
         val p = parseDecimal(text)
         it.copy(
             unitPriceText = text,
@@ -229,11 +229,11 @@ class FillViewModel(
         )
     }
 
-    fun useOfficialPrice() = edit { s ->
+    override fun useOfficialPrice() = edit { s ->
         s.officialPrice?.let { s.copy(unitPriceText = it.toInputText(2), priceSource = PriceSource.OFFICIAL_MONTH) } ?: s
     }
 
-    fun onGrade(grade: FuelGrade) {
+    override fun onGrade(grade: FuelGrade) {
         val s = _state.value
         edit { it.copy(grade = grade) }
         viewModelScope.launch {
@@ -250,23 +250,23 @@ class FillViewModel(
         }
     }
 
-    fun onFull(full: Boolean) = edit { it.copy(isFull = full) }
+    override fun onFull(full: Boolean) = edit { it.copy(isFull = full) }
 
-    fun onMissedPrevious(missed: Boolean) = edit { it.copy(missedPrevious = missed) }
+    override fun onMissedPrevious(missed: Boolean) = edit { it.copy(missedPrevious = missed) }
 
-    fun onShowLevels(show: Boolean) = edit { it.copy(showLevels = show) }
+    override fun onShowLevels(show: Boolean) = edit { it.copy(showLevels = show) }
 
-    fun onLevelBefore(v: Float) = edit { it.copy(levelBefore = v.coerceIn(0f, it.levelAfter)) }
+    override fun onLevelBefore(v: Float) = edit { it.copy(levelBefore = v.coerceIn(0f, it.levelAfter)) }
 
-    fun onLevelAfter(v: Float) = edit {
+    override fun onLevelAfter(v: Float) = edit {
         it.copy(levelAfter = v.coerceIn(it.levelBefore, 1f), isFull = if (v >= 0.97f) true else it.isFull)
     }
 
-    fun onStation(brand: String) = edit { it.copy(stationBrand = if (it.stationBrand == brand) null else brand) }
+    override fun onStation(brand: String) = edit { it.copy(stationBrand = if (it.stationBrand == brand) null else brand) }
 
-    fun acceptPartial() = edit { it.copy(isFull = false, suggestPartial = false) }
+    override fun acceptPartial() = edit { it.copy(isFull = false, suggestPartial = false) }
 
-    fun onReceipt(fields: ReceiptFields?) {
+    override fun onReceipt(fields: ReceiptFields?) {
         if (fields == null) {
             edit { it.copy(scanFailed = true) }
             return
@@ -350,7 +350,7 @@ class FillViewModel(
         _state.update { it.copy(warnings = warnings, suggestPartial = partial) }
     }
 
-    fun save() {
+    override fun save() {
         val s = _state.value
         if (!s.canSave) return
         val d = data ?: return
@@ -378,7 +378,7 @@ class FillViewModel(
         }
     }
 
-    fun delete() {
+    override fun delete() {
         val id = original?.id ?: return
         viewModelScope.launch {
             container.events.delete(id)

@@ -296,4 +296,9 @@
     <string name="fill_more_details">More details</string>
     <string name="fill_save">Save fill-up</string>
     <string name="fill_save_with_total">Save fill-up · %1$s</string>
+    <string name="fill_from_car_hint">Check the amount, then save. The price is the official UAE price for this month.</string>
+    <string name="fill_official_pill">Official · %1$s · %2$s / %3$s</string>
+    <string name="fill_mark_partial">Mark partial</string>
+    <string name="expense_save_with_total">Save expense · %1$s</string>
+    <string name="parking_sms_preview">To %1$s: %2$s</string>
 </resources>

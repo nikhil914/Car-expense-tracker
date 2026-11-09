@@ -55,7 +55,7 @@ class ExpenseViewModel(
     private val container: AppContainer,
     private val expenseId: Id?,
     initialCategory: ExpenseCategoryKey?,
-) : ViewModel() {
+) : ViewModel(), ExpenseActions {
     private val zoneTz = TimeZone.currentSystemDefault()
     private val _state = MutableStateFlow(ExpenseUiState(category = initialCategory ?: ExpenseCategoryKey.SALIK))
     val state: StateFlow<ExpenseUiState> = _state.asStateFlow()
@@ -100,30 +100,30 @@ class ExpenseViewModel(
         }
     }
 
-    fun onCategory(c: ExpenseCategoryKey) {
+    override fun onCategory(c: ExpenseCategoryKey) {
         _state.update { it.copy(category = c) }
         updateParkingRate()
     }
 
-    fun onAmount(t: String) = _state.update { it.copy(amountText = t) }
-    fun onDate(d: LocalDate?) = _state.update { it.copy(date = d ?: it.date) }
-    fun onOdometer(t: String) = _state.update { it.copy(odometerText = t) }
-    fun onTitle(t: String) = _state.update { it.copy(title = t) }
-    fun onNote(t: String) = _state.update { it.copy(note = t) }
-    fun onIncome(v: Boolean) = _state.update { it.copy(isIncome = v) }
-    fun onPlate(t: String) = _state.update { it.copy(plate = t) }
+    override fun onAmount(t: String) = _state.update { it.copy(amountText = t) }
+    override fun onDate(d: LocalDate?) = _state.update { it.copy(date = d ?: it.date) }
+    override fun onOdometer(t: String) = _state.update { it.copy(odometerText = t) }
+    override fun onTitle(t: String) = _state.update { it.copy(title = t) }
+    override fun onNote(t: String) = _state.update { it.copy(note = t) }
+    override fun onIncome(v: Boolean) = _state.update { it.copy(isIncome = v) }
+    override fun onPlate(t: String) = _state.update { it.copy(plate = t) }
 
-    fun onEmirate(e: Emirate) {
+    override fun onEmirate(e: Emirate) {
         _state.update { it.copy(emirate = e) }
         updateParkingRate()
     }
 
-    fun onZone(t: String) {
+    override fun onZone(t: String) {
         _state.update { it.copy(zone = t.uppercase()) }
         updateParkingRate()
     }
 
-    fun onHours(h: Int) {
+    override fun onHours(h: Int) {
         _state.update { it.copy(hours = h.coerceIn(1, 24)) }
         updateParkingRate()
     }
@@ -148,13 +148,13 @@ class ExpenseViewModel(
     }
 
     /** SMS draft for paying parking (e.g. Dubai 7275, Abu Dhabi 3009, Sharjah 5566). */
-    fun smsDraft(): SmsDraft? {
+    override fun smsDraft(): SmsDraft? {
         val s = _state.value
         if (s.plate.isBlank() || s.zone.isBlank()) return null
         return runCatching { Parking.smsDraft(s.emirate, s.plate.trim(), s.zone.trim(), s.hours) }.getOrNull()
     }
 
-    fun save() {
+    override fun save() {
         val s = _state.value
         val d = data ?: return
         val amount = s.amount ?: return
@@ -189,7 +189,7 @@ class ExpenseViewModel(
         }
     }
 
-    fun delete() {
+    override fun delete() {
         val id = original?.id ?: return
         viewModelScope.launch {
             container.expenses.delete(id)
