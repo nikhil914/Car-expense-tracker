@@ -42,7 +42,7 @@
     <string name="dashboard_cost_per_km_total">التكلفة الإجمالية: %1$s لكل كم</string>
     <string name="dashboard_explain_need_two_full">سجّل تعبئتين كاملتين لمعرفة معدل الاستهلاك.</string>
     <string name="dashboard_explain_no_fills">لا توجد تعبئات بعد. أضف أول تعبئة.</string>
-    <string name="dashboard_last">الأخيرة</string>
+    <string name="dashboard_last">آخر تعبئة</string>
     <string name="dashboard_month_empty">لا مصروفات هذا الشهر بعد</string>
     <string name="dashboard_month_spend">المصروف في %1$s</string>
     <string name="dashboard_month_spend_plain">هذا الشهر</string>
@@ -283,4 +283,9 @@
     <string name="warning_odo_not_increasing">يجب أن يكون العداد أعلى من التعبئة السابقة</string>
     <string name="warning_possible_missed_fill">هل فاتتك تعبئة؟</string>
     <string name="warning_total_mismatch">الإجمالي لا يطابق الكمية × السعر</string>
+    <string name="dashboard_running_cost">تكلفة التشغيل</string>
+    <string name="dashboard_per_km_value">%1$s / كم</string>
+    <string name="dashboard_price_official">السعر الرسمي في الإمارات</string>
+    <string name="dashboard_price_delta_up">▲ %1$s فلس مقارنة بـ %2$s</string>
+    <string name="dashboard_price_delta_down">▼ %1$s فلس مقارنة بـ %2$s</string>
 </resources>

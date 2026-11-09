@@ -2,6 +2,13 @@
 
 package ae.sayyara.app.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import ae.sayyara.app.R
 import ae.sayyara.app.ui.format.UiFormatter
 import androidx.compose.foundation.layout.Arrangement
@@ -30,7 +37,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -71,13 +77,60 @@ fun SectionCard(
     title: String? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Card(modifier = modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (title != null) {
-                Text(title, style = MaterialTheme.typography.titleMedium)
-            }
-            content()
+    SayyaraCard(modifier) {
+        if (title != null) {
+            Text(title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
+        content()
+    }
+}
+
+/**
+ * Brand card: 24 dp corners, tonal surface and a 1 dp hairline border instead of a drop shadow.
+ * [container] overrides the surface colour (e.g. an alert tint).
+ */
+@Composable
+fun SayyaraCard(
+    modifier: Modifier = Modifier,
+    container: Color = MaterialTheme.colorScheme.surfaceContainerLow,
+    onClick: (() -> Unit)? = null,
+    contentPadding: Dp = 20.dp,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val shape = MaterialTheme.shapes.large
+    val border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    val colors = CardDefaults.cardColors(containerColor = container)
+    val body: @Composable ColumnScope.() -> Unit = {
+        Column(Modifier.padding(contentPadding), verticalArrangement = Arrangement.spacedBy(12.dp), content = content)
+    }
+    if (onClick != null) {
+        Card(onClick = onClick, modifier = modifier.fillMaxWidth(), shape = shape, colors = colors, border = border, content = body)
+    } else {
+        Card(modifier = modifier.fillMaxWidth(), shape = shape, colors = colors, border = border, content = body)
+    }
+}
+
+/** Small uppercase overline label (e.g. "LAST FILL"). */
+@Composable
+fun Overline(text: String, modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.onSurfaceVariant) {
+    Text(text.uppercase(), modifier = modifier, style = MaterialTheme.typography.labelSmall, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
+}
+
+/** Full pill badge, e.g. fuel grade or "Provisional". */
+@Composable
+fun PillBadge(text: String, color: Color, modifier: Modifier = Modifier, filled: Boolean = false) {
+    Surface(
+        modifier = modifier,
+        shape = CircleShape,
+        color = if (filled) color else color.copy(alpha = 0.14f),
+        contentColor = if (filled) Color.White else color,
+    ) {
+        Text(
+            text,
+            style = MaterialTheme.typography.labelMedium,
+            maxLines = 1,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+        )
     }
 }
 

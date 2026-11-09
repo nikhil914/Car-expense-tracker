@@ -18,7 +18,7 @@ data class UiSettings(
     /** UAE default is km/L. */
     val economyUnit: EconomyUnit = EconomyUnit.KM_PER_L,
     val theme: ThemeMode = ThemeMode.SYSTEM,
-    val dynamicColor: Boolean = true,
+    val dynamicColor: Boolean = false,
     val onboardingDone: Boolean = false,
     /** PDPL: explicit, specific consent to store vehicle data on this device. */
     val consentAccepted: Boolean = false,

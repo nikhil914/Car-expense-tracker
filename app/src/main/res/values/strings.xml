@@ -42,7 +42,7 @@
     <string name="dashboard_cost_per_km_total">Total cost: %1$s per km</string>
     <string name="dashboard_explain_need_two_full">Log two full-tank fills to see your consumption.</string>
     <string name="dashboard_explain_no_fills">No fill-ups yet. Add your first one.</string>
-    <string name="dashboard_last">Last</string>
+    <string name="dashboard_last">Last fill</string>
     <string name="dashboard_month_empty">Nothing spent this month yet</string>
     <string name="dashboard_month_spend">Spent in %1$s</string>
     <string name="dashboard_month_spend_plain">This month</string>
@@ -284,4 +284,9 @@
     <string name="warning_odo_not_increasing">Odometer must be higher than the previous fill</string>
     <string name="warning_possible_missed_fill">Did you miss a fill-up?</string>
     <string name="warning_total_mismatch">Total does not match amount × price</string>
+    <string name="dashboard_running_cost">Running cost</string>
+    <string name="dashboard_per_km_value">%1$s / km</string>
+    <string name="dashboard_price_official">Official UAE price</string>
+    <string name="dashboard_price_delta_up">▲ %1$s fils vs %2$s</string>
+    <string name="dashboard_price_delta_down">▼ %1$s fils vs %2$s</string>
 </resources>

@@ -1,60 +1,77 @@
 package ae.sayyara.app.ui.theme
 
+import ae.sayyara.core.model.ExpenseCategoryKey
+import ae.sayyara.core.model.FuelGrade
 import androidx.compose.ui.graphics.Color
 
-// Brand fallback palette: deep teal (primary) on desert sand (secondary/tertiary).
+// "Oasis & Asphalt" palette. Light = "Warm Desert Alabaster" (sunlight at the pump),
+// Dark = "Midnight Asphalt" (night driving).
 
 // Light
-internal val TealPrimaryLight = Color(0xFF00696E)
-internal val OnTealPrimaryLight = Color(0xFFFFFFFF)
-internal val TealContainerLight = Color(0xFF9CF1F5)
-internal val OnTealContainerLight = Color(0xFF002022)
-internal val SandSecondaryLight = Color(0xFF7A5A2C)
-internal val OnSandSecondaryLight = Color(0xFFFFFFFF)
-internal val SandContainerLight = Color(0xFFFFDDB0)
-internal val OnSandContainerLight = Color(0xFF281800)
-internal val DuneTertiaryLight = Color(0xFF8A4F2A)
-internal val OnDuneTertiaryLight = Color(0xFFFFFFFF)
-internal val DuneContainerLight = Color(0xFFFFDBC9)
-internal val OnDuneContainerLight = Color(0xFF331200)
-internal val BackgroundLight = Color(0xFFFFFBF5)
-internal val OnBackgroundLight = Color(0xFF1F1B16)
-internal val SurfaceLight = Color(0xFFFFFBF5)
-internal val OnSurfaceLight = Color(0xFF1F1B16)
-internal val SurfaceVariantLight = Color(0xFFEFE0CF)
-internal val OnSurfaceVariantLight = Color(0xFF4F4539)
-internal val OutlineLight = Color(0xFF817567)
-internal val ErrorLight = Color(0xFFBA1A1A)
-internal val ErrorContainerLight = Color(0xFFFFDAD6)
-internal val OnErrorContainerLight = Color(0xFF410002)
+internal val CanvasLight = Color(0xFFF7F5F0)
+internal val CardLight = Color(0xFFFFFFFF)
+internal val StoneLight = Color(0xFFF0ECE1)
+internal val StoneHighLight = Color(0xFFE9E4D7)
+internal val PrimaryLight = Color(0xFF0A5C5A)
+internal val OnPrimaryLight = Color(0xFFFFFFFF)
+internal val PrimaryContainerLight = Color(0xFFD4F0EE)
+internal val OnPrimaryContainerLight = Color(0xFF043332)
+internal val AccentLight = Color(0xFFC87D32)
+internal val OnAccentLight = Color(0xFFFFFFFF)
+internal val AccentContainerLight = Color(0xFFF8E3CC)
+internal val OnAccentContainerLight = Color(0xFF4A2A08)
+internal val InkLight = Color(0xFF111618)
+internal val SlateLight = Color(0xFF5A6568)
+internal val HairlineLight = Color(0xFFE5E0D5)
+internal val OutlineLight = Color(0xFFB9B2A4)
 
 // Dark
-internal val TealPrimaryDark = Color(0xFF80D4D9)
-internal val OnTealPrimaryDark = Color(0xFF00373A)
-internal val TealContainerDark = Color(0xFF004F53)
-internal val OnTealContainerDark = Color(0xFF9CF1F5)
-internal val SandSecondaryDark = Color(0xFFEDC08A)
-internal val OnSandSecondaryDark = Color(0xFF432C03)
-internal val SandContainerDark = Color(0xFF5F4217)
-internal val OnSandContainerDark = Color(0xFFFFDDB0)
-internal val DuneTertiaryDark = Color(0xFFFFB68D)
-internal val OnDuneTertiaryDark = Color(0xFF532201)
-internal val DuneContainerDark = Color(0xFF6E3815)
-internal val OnDuneContainerDark = Color(0xFFFFDBC9)
-internal val BackgroundDark = Color(0xFF17130E)
-internal val OnBackgroundDark = Color(0xFFEBE1D6)
-internal val SurfaceDark = Color(0xFF17130E)
-internal val OnSurfaceDark = Color(0xFFEBE1D6)
-internal val SurfaceVariantDark = Color(0xFF4F4539)
-internal val OnSurfaceVariantDark = Color(0xFFD3C4B4)
-internal val OutlineDark = Color(0xFF9C8F80)
-internal val ErrorDark = Color(0xFFFFB4AB)
-internal val ErrorContainerDark = Color(0xFF93000A)
-internal val OnErrorContainerDark = Color(0xFFFFDAD6)
+internal val CanvasDark = Color(0xFF0B0F11)
+internal val CardDark = Color(0xFF141A1D)
+internal val GraphiteDark = Color(0xFF1D2529)
+internal val GraphiteHighDark = Color(0xFF253035)
+internal val PrimaryDark = Color(0xFF2DD4BF)
+internal val OnPrimaryDark = Color(0xFF042F2E)
+internal val PrimaryContainerDark = Color(0xFF113D3B)
+internal val OnPrimaryContainerDark = Color(0xFF99F6E4)
+internal val AccentDark = Color(0xFFF59E0B)
+internal val OnAccentDark = Color(0xFF2B1A00)
+internal val AccentContainerDark = Color(0xFF3D2A08)
+internal val OnAccentContainerDark = Color(0xFFFCD9A0)
+internal val InkDark = Color(0xFFF3F6F8)
+internal val SlateDark = Color(0xFF8E9B9F)
+internal val HairlineDark = Color(0xFF232D32)
+internal val OutlineDark = Color(0xFF3A474D)
 
-/** Fixed, theme-independent series colours for expense categories in charts. */
-val CategoryPalette = listOf(
-    Color(0xFF00897B), Color(0xFFF9A825), Color(0xFF6D4C41), Color(0xFF1E88E5),
-    Color(0xFF8E24AA), Color(0xFFE53935), Color(0xFF43A047), Color(0xFFFB8C00),
-    Color(0xFF3949AB), Color(0xFFD81B60), Color(0xFF00ACC1), Color(0xFF757575),
-)
+// Semantic
+val AlertRed = Color(0xFFEF4444)
+val TrendDownGreen = Color(0xFF10B981)
+
+/** UAE pump colour coding for fuel grades. */
+fun FuelGrade.badgeColor(): Color = when (this) {
+    FuelGrade.SUPER_98 -> Color(0xFF2563EB)
+    FuelGrade.SPECIAL_95 -> Color(0xFF10B981)
+    FuelGrade.E_PLUS_91 -> Color(0xFFF59E0B)
+    FuelGrade.DIESEL -> Color(0xFF64748B)
+    FuelGrade.ELECTRIC -> Color(0xFF06B6D4)
+    else -> Color(0xFF94A3B8)
+}
+
+/** Fixed, theme-independent series colours for expense categories. */
+fun ExpenseCategoryKey.color(): Color = when (this) {
+    ExpenseCategoryKey.FUEL -> Color(0xFF0D9488)
+    ExpenseCategoryKey.SALIK -> Color(0xFF2563EB)
+    ExpenseCategoryKey.DARB -> Color(0xFF7C3AED)
+    ExpenseCategoryKey.PARKING -> Color(0xFFF59E0B)
+    ExpenseCategoryKey.MULKIYA -> Color(0xFFC87D32)
+    ExpenseCategoryKey.INSPECTION -> Color(0xFF0891B2)
+    ExpenseCategoryKey.INSURANCE -> Color(0xFF4F46E5)
+    ExpenseCategoryKey.SERVICE -> Color(0xFF16A34A)
+    ExpenseCategoryKey.TYRES -> Color(0xFF475569)
+    ExpenseCategoryKey.FINE -> Color(0xFFEF4444)
+    ExpenseCategoryKey.WASH -> Color(0xFF06B6D4)
+    ExpenseCategoryKey.OTHER -> Color(0xFF94A3B8)
+}
+
+/** Kept for existing callers (indexed by category ordinal). */
+val CategoryPalette: List<Color> = ExpenseCategoryKey.entries.map { it.color() }
